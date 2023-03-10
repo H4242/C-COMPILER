@@ -1,11 +1,14 @@
 grammar ifcc;
 
-axiom : prog ;
+axiom: prog;
 
-prog : 'int' 'main' '(' ')' '{' RETURN CONST ';' '}' ;
+prog: 'int' 'main' '(' ')' '{' return_stmt ';' '}';
 
-RETURN : 'return' ;
-CONST : [0-9]+ ;
-COMMENT : '/*' .*? '*/' -> skip ;
-DIRECTIVE : '#' .*? '\n' -> skip ;
-WS    : [ \t\r\n] -> channel(HIDDEN);
+return_stmt: RETURN CONST;
+
+RETURN: 'return';
+CONST: [0-9]+;
+COMMENT: '/*' .*? '*/' -> skip;
+EOLCOMMENT: '//' .*? '\n' -> skip;
+DIRECTIVE: '#' .*? '\n' -> skip;
+WS: [ \t\r\n] -> channel(HIDDEN);
