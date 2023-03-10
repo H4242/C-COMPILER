@@ -13,4 +13,4 @@ C compilator written in C++
 
 ⇒ `refact/nom_du_refactor` : Améliorer le code sans forcément ajouter une feature
 
-Pour merge sur dev CREER TOUJOURS une pull request `dev ← personalBranch` (2 personnes valident avant le merge)
+Pour merge sur main CREER TOUJOURS une pull request `main ← dev` (2 personnes valident avant le merge)
