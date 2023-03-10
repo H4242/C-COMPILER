@@ -1,7 +1,7 @@
 # PLD-COMP
 C compilator written in C++
 
-Git conventions :
+# Git conventions :
 
 ⇒ main : La branche avec la version stable du projet (Une seule personne qui push sur master)
 
