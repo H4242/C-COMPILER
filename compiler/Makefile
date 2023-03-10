@@ -2,6 +2,9 @@
 ANTLRJAR=../antlr/jar/antlr-4.9.2-complete.jar
 ANTLRINC=../antlr/include
 ANTLRLIB=../antlr/lib/libantlr4-runtime.a
+ANTLRJAR=/usr/share/java/stringtemplate4.jar:/usr/share/java/antlr4.jar:/usr/share/java/antlr4-runtime.jar:/usr/share/java/antlr3-runtime.jar/:/usr/share/java/treelayout.jar 
+ANTLRINC=/usr/include/antlr4-runtime 
+ANTLRLIB=/usr/lib/x86_64-linux-gnu/libantlr4-runtime.a
 
 CC=g++
 CCFLAGS=-g -c -std=c++17 -I$(ANTLRINC) -Wno-attributes # -Wno-defaulted-function-deleted -Wno-unknown-warning-option
