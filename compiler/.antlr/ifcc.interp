@@ -37,7 +37,7 @@ axiom
 prog
 return_stmt
 declaration
-affect
+assignment
 
 
 atn:

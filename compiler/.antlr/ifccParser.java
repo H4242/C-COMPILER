@@ -1,4 +1,4 @@
-// Generated from c:\Users\yahia\GitHub\PLD-COMP\compiler\ifcc.g4 by ANTLR 4.9.2
+// Generated from c:\Users\saadg\Desktop\PLD-COMP\compiler\ifcc.g4 by ANTLR 4.9.2
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -20,10 +20,10 @@ public class ifccParser extends Parser {
 		CONST=10, COMMENT=11, DIRECTIVE=12, WS=13, VAR=14;
 	public static final int
 		RULE_axiom = 0, RULE_prog = 1, RULE_return_stmt = 2, RULE_declaration = 3, 
-		RULE_affect = 4;
+		RULE_assignment = 4;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"axiom", "prog", "return_stmt", "declaration", "affect"
+			"axiom", "prog", "return_stmt", "declaration", "assignment"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -123,8 +123,8 @@ public class ifccParser extends Parser {
 	}
 
 	public static class ProgContext extends ParserRuleContext {
-		public AffectContext affect() {
-			return getRuleContext(AffectContext.class,0);
+		public AssignmentContext assignment() {
+			return getRuleContext(AssignmentContext.class,0);
 		}
 		public Return_stmtContext return_stmt() {
 			return getRuleContext(Return_stmtContext.class,0);
@@ -152,7 +152,7 @@ public class ifccParser extends Parser {
 			setState(16);
 			match(T__4);
 			setState(17);
-			affect();
+			assignment();
 			setState(18);
 			return_stmt();
 			setState(19);
@@ -265,7 +265,7 @@ public class ifccParser extends Parser {
 		return _localctx;
 	}
 
-	public static class AffectContext extends ParserRuleContext {
+	public static class AssignmentContext extends ParserRuleContext {
 		public DeclarationContext declaration() {
 			return getRuleContext(DeclarationContext.class,0);
 		}
@@ -274,15 +274,15 @@ public class ifccParser extends Parser {
 		public TerminalNode VAR(int i) {
 			return getToken(ifccParser.VAR, i);
 		}
-		public AffectContext(ParserRuleContext parent, int invokingState) {
+		public AssignmentContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_affect; }
+		@Override public int getRuleIndex() { return RULE_assignment; }
 	}
 
-	public final AffectContext affect() throws RecognitionException {
-		AffectContext _localctx = new AffectContext(_ctx, getState());
-		enterRule(_localctx, 8, RULE_affect);
+	public final AssignmentContext assignment() throws RecognitionException {
+		AssignmentContext _localctx = new AssignmentContext(_ctx, getState());
+		enterRule(_localctx, 8, RULE_assignment);
 		try {
 			setState(45);
 			_errHandler.sync(this);
