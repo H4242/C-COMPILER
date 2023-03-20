@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <string>
+#include "Variable.h"
 using namespace std;
 
 class SymbolTable
@@ -9,14 +10,13 @@ class SymbolTable
 
 public:
     bool existingVariable(string name);
-    void addVariable(string name, int offset);
-    int getOffset(string name);
+    void addVariable(string name, int offset, int value = 0);
     SymbolTable()
     {
         variableTable = {};
     }
     virtual ~SymbolTable() {}
 
-protected:
-    unordered_map<string, int> variableTable;
+public:
+    unordered_map<string, Variable> variableTable;
 };

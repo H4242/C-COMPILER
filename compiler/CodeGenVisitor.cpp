@@ -31,7 +31,14 @@ antlrcpp::Any CodeGenVisitor::visitReturnconst(ifccParser::ReturnconstContext *c
 
 antlrcpp::Any CodeGenVisitor::visitReturnvar(ifccParser::ReturnvarContext *ctx)
 {
-
+	string variable = ctx->VAR()->getText();
+	// check if the variable doesn't exist
+	if (!symbolTable->existingVariable(variable))
+	{
+		cout << ">> err: you want to return a variable which was not declared? looool" << endl;
+	}
+	int val = symbolTable->variableTable[variable].getValue();
+	cout << "	movl	$" << val << ", %eax\n";
 	return 0;
 }
 
@@ -40,7 +47,7 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 	if (symbolTable->existingVariable(ctx->VAR()->getText()))
 	{
 		// return error
-		cout << "variable already declared ;)" << endl;
+		cout << ">> err: do you have alzeimer? you declared same variable twice" << endl;
 		return -1;
 	}
 	symbolTable->addVariable(ctx->VAR()->getText(), currentOffset -= 4);
@@ -54,6 +61,7 @@ antlrcpp::Any CodeGenVisitor::visitAssignconst(ifccParser::AssignconstContext *c
 		visit(ctx->declaration());
 	}
 	cout << "	movl 	$" << ctx->CONST()->getText() << ", " << currentOffset << "(%rbp)\n";
+	symbolTable->variableTable[ctx->declaration()->VAR()->getText()].setValue(stoi(ctx->CONST()->getText()));
 	return 0;
 }
 
@@ -62,10 +70,12 @@ antlrcpp::Any CodeGenVisitor::visitAssignvar(ifccParser::AssignvarContext *ctx)
 	if (ctx->declaration())
 	{
 		visit(ctx->declaration());
-		cout << "	movl 	" << symbolTable->getOffset(ctx->VAR(0)->getText()) << "(%rbp), %eax\n";
-		cout << "	movl 	%eax, " << symbolTable->getOffset(ctx->declaration()->VAR()->getText()) << "(%rbp)\n";
+		cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp), %eax\n";
+		cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";
 	}
-	cout << "	movl 	" << symbolTable->getOffset(ctx->VAR(0)->getText()) << "(%rbp), %eax\n";
-	cout << "	movl 	%eax, " << symbolTable->getOffset(ctx->VAR(1)->getText()) << "(%rbp)\n";
+	cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(1)->getText()].getOffset() << "(%rbp), %eax\n";
+	cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";
+	// update value in the hashmap
+	symbolTable->variableTable[ctx->VAR(0)->getText()].setValue(symbolTable->variableTable[ctx->VAR(1)->getText()].getValue());
 	return 0;
 }
