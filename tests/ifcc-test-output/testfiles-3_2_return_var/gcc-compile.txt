@@ -1,0 +1,7 @@
+input.c: In function ‘main’:
+input.c:4:12: error: ‘b’ undeclared (first use in this function)
+    4 |     return b;
+      |            ^
+input.c:4:12: note: each undeclared identifier is reported only once for each function it appears in
+
+return code: 1
