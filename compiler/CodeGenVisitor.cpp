@@ -2,7 +2,6 @@
 #include "SymbolTable.h"
 
 // extern SymbolTable *ptr;
-
 antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
 	std::cout << ".globl	main\n"
@@ -37,8 +36,7 @@ antlrcpp::Any CodeGenVisitor::visitReturnvar(ifccParser::ReturnvarContext *ctx)
 	{
 		cout << ">> err: you want to return a variable which was not declared? looool" << endl;
 	}
-	int val = symbolTable->variableTable[variable].getValue();
-	cout << "	movl	$" << val << ", %eax\n";
+	cout << "	movl	" << symbolTable->variableTable[variable].getOffset() << "(%rbp), %eax\n";
 	return 0;
 }
 
@@ -71,10 +69,11 @@ antlrcpp::Any CodeGenVisitor::visitAssignvar(ifccParser::AssignvarContext *ctx)
 	{
 		visit(ctx->declaration());
 		cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp), %eax\n";
-		cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";
+		cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->declaration()->VAR()->getText()].getOffset() << "(%rbp)\n";
+		return 0;
 	}
-	cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(1)->getText()].getOffset() << "(%rbp), %eax\n";
-	cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";
+	cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp), %eax\n";
+	cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->declaration()->VAR()->getText()].getOffset() << "(%rbp)\n";
 	// update value in the hashmap
 	symbolTable->variableTable[ctx->VAR(0)->getText()].setValue(symbolTable->variableTable[ctx->VAR(1)->getText()].getValue());
 	return 0;
