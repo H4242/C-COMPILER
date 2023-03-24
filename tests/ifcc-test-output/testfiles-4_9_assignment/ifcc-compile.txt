@@ -1,5 +1,0 @@
-line 4:14 token recognition error at: '+'
-line 4:16 extraneous input 'a' expecting ';'
-error: syntax error during parsing
-
-return code: 1

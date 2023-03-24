@@ -1,0 +1,7 @@
+input.c: In function ‘main’:
+input.c:4:13: error: ‘c’ undeclared (first use in this function)
+    4 |     int b = c;
+      |             ^
+input.c:4:13: note: each undeclared identifier is reported only once for each function it appears in
+
+return code: 1
