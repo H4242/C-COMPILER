@@ -1,5 +1,0 @@
-terminate called after throwing an instance of 'std::logic_error'
-  what():  assignment of undeclared variable
-Aborted
-
-return code: 134

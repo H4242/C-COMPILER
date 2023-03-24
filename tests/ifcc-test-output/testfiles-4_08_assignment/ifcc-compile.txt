@@ -1,5 +1,0 @@
-terminate called after throwing an instance of 'std::logic_error'
-  what():  variable not declared
-Aborted
-
-return code: 134
