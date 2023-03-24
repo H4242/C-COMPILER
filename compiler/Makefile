@@ -3,7 +3,7 @@ ANTLRJAR=../antlr/jar/antlr-4.9.2-complete.jar
 ANTLRINC=../antlr/include
 ANTLRLIB=../antlr/lib/libantlr4-runtime.a
 ANTLRJAR=/usr/share/java/stringtemplate4.jar:/usr/share/java/antlr4.jar:/usr/share/java/antlr4-runtime.jar:/usr/share/java/antlr3-runtime.jar/:/usr/share/java/treelayout.jar
-ANTLRINC=/usr/include/antlr4-runtime
+ANTLRINC=/usr/include/antlr4-runtime 
 ANTLRLIB=/usr/lib/x86_64-linux-gnu/libantlr4-runtime.a
 
 CC=g++
@@ -15,7 +15,7 @@ all: ifcc
 
 ##########################################
 # link together all pieces of our compiler 
-OBJECTS=build/main.o build/CodeGenVisitor.o build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o build/ifccParser.o 
+OBJECTS=build/main.o build/Variable.o build/SymbolTable.o build/CodeGenVisitor.o build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o build/ifccParser.o 
 
 ifcc: $(OBJECTS)
 	@mkdir -p build
@@ -40,7 +40,7 @@ build/%.o: generated/%.cpp
 # generate the C++ implementation of our Lexer/Parser/Visitor
 #
 # cf https://stackoverflow.com/a/3077254/117814 for the multiple-file trick
-generated/ifcc%.cpp: ifcc.g4
+generated/ifccParser.cpp generated/ifccLexer.cpp generated/ifccVisitor.cpp generated/ifccBaseVisitor.cpp: ifcc.g4
 	@mkdir -p generated
 	java -cp $(ANTLRJAR) org.antlr.v4.Tool  -visitor -no-listener -Dlanguage=Cpp -o generated ifcc.g4
 

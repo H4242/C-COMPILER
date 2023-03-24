@@ -9,7 +9,7 @@
 #include "generated/ifccBaseVisitor.h"
 
 #include "CodeGenVisitor.h"
-
+#include "SymbolTable.h"
 using namespace antlr4;
 using namespace std;
 
@@ -42,6 +42,14 @@ int main(int argn, const char **argv)
     cerr << "error: syntax error during parsing" << endl;
     exit(1);
   }
+
+  // use another visitor declarationVisitor
+  /*
+  use hashmap <string, long> = <variableName, offsetInStack>
+  if newDeclaration in hashmap => error (even if different type)
+  */
+
+  // create symbolTable for the scope
 
   CodeGenVisitor v;
   v.visit(tree);

@@ -1,4 +1,5 @@
-// Test
-int main() {
-    return 42;
+int main()
+{
+    int a = 41;
+    return b;
 }
