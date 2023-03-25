@@ -1,21 +1,26 @@
 # PLD-COMP
 
-C compilator written in C++
+C compiler written in C++ using antlr4.
 
 # Git conventions :
 
-⇒ main : La branche avec la version stable du projet (Une seule personne qui push sur master)
+⇒ main : The branch with the stable version of the project (Only one person pushing on master)
 
-⇒ dev : La branche où tout le monde peut merge après avoir fini sa feature (C’est la branche sur laquelle on se base pour créer une nouvelle branche)
+⇒ dev : The branch where everyone can merge after finishing his feature (This is the branch on which we base ourselves to create a new branch)
 
-⇒ `feat/nom_de_la_fonctionnalité` : Dans cette branche on développe UNE SEULE fonctionnalité
+⇒ `feat/feature_name` : In this branch only ONE functionality is developed
 
-⇒ `fix/nom_du_bug` : Dans cette branche on “fix” un bug en mentionnant l’origine du bug
+⇒ `fix/bug_name` : In this branch we fix a bug by mentioning the origin of the bug
 
-⇒ `refact/nom_du_refactor` : Améliorer le code sans forcément ajouter une feature
+⇒ `refact/refactor_name` : Improve the code without necessarily adding a feature
 
-Pour merge sur main CREER TOUJOURS une pull request `main ← dev` (2 personnes valident avant le merge)
+To merge on main ALWAYS create a pull request `main ← dev` (2 people validate before merge)
 
-Membres de l'équipe :
+Team Members :
 
 - Yahia BELLAMINE
+- Jean ABOU MOUSSA
+- Malak ELKOURI
+- Saad GUESSOUS
+- Imadath YAYA
+- Yasssine KHALAKHIL
