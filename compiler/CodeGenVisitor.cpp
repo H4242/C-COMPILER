@@ -2,7 +2,6 @@
 #include "SymbolTable.h"
 
 // extern SymbolTable *ptr;
-
 antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
 	std::cout << ".globl	main\n"
@@ -35,10 +34,9 @@ antlrcpp::Any CodeGenVisitor::visitReturnvar(ifccParser::ReturnvarContext *ctx)
 	// check if the variable doesn't exist
 	if (!symbolTable->existingVariable(variable))
 	{
-		cout << ">> err: you want to return a variable which was not declared? looool" << endl;
+		throw std::logic_error("you want to return a variable which was not declared");
 	}
-	int val = symbolTable->variableTable[variable].getValue();
-	cout << "	movl	$" << val << ", %eax\n";
+	cout << "	movl	" << symbolTable->variableTable[variable].getOffset() << "(%rbp), %eax\n";
 	return 0;
 }
 
@@ -47,8 +45,7 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 	if (symbolTable->existingVariable(ctx->VAR()->getText()))
 	{
 		// return error
-		cout << ">> err: do you have alzeimer? you declared same variable twice" << endl;
-		return -1;
+		throw std::logic_error("variable declared twice");
 	}
 	symbolTable->addVariable(ctx->VAR()->getText(), currentOffset -= 4);
 	return 0;
@@ -56,22 +53,41 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 
 antlrcpp::Any CodeGenVisitor::visitAssignconst(ifccParser::AssignconstContext *ctx)
 {
+	string var;
 	if (ctx->declaration())
 	{
 		visit(ctx->declaration());
+		var = ctx->declaration()->VAR()->getText();
 	}
+	else
+	{
+		if (!symbolTable->existingVariable(ctx->VAR()->getText()))
+		{
+			// return error
+			throw std::logic_error("assignment of undeclared variable");
+		}
+		var = ctx->VAR()->getText();
+	}
+
 	cout << "	movl 	$" << ctx->CONST()->getText() << ", " << currentOffset << "(%rbp)\n";
-	symbolTable->variableTable[ctx->declaration()->VAR()->getText()].setValue(stoi(ctx->CONST()->getText()));
+	symbolTable->variableTable[var].setValue(stoi(ctx->CONST()->getText()));
+
 	return 0;
 }
 
 antlrcpp::Any CodeGenVisitor::visitAssignvar(ifccParser::AssignvarContext *ctx)
 {
+	if (symbolTable->variableTable.find(ctx->VAR(0)->getText()) == symbolTable->variableTable.end())
+	{
+		throw std::logic_error("variable not declared");
+	}
+
 	if (ctx->declaration())
 	{
 		visit(ctx->declaration());
 		cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp), %eax\n";
-		cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";
+		cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->declaration()->VAR()->getText()].getOffset() << "(%rbp)\n";
+		return 0;
 	}
 	cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(1)->getText()].getOffset() << "(%rbp), %eax\n";
 	cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";

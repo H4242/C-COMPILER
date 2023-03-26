@@ -4,18 +4,24 @@ C compilator written in C++
 
 # Git conventions :
 
-⇒ main : La branche avec la version stable du projet (Une seule personne qui push sur master)
+⇒ main : The stable version of the project. To merge to `main` from `dev`, create a pull request and at least one of the two responsibles of the github repository needs to review the code.
 
-⇒ dev : La branche où tout le monde peut merge après avoir fini sa feature (C’est la branche sur laquelle on se base pour créer une nouvelle branche)
+⇒ dev : The branch that anyone can merge to, when they finish coding a feature
 
-⇒ `feat/nom_de_la_fonctionnalité` : Dans cette branche on développe UNE SEULE fonctionnalité
+⇒ `feat/feature_name` : In this branch, we develop only one feature.
 
-⇒ `fix/nom_du_bug` : Dans cette branche on “fix” un bug en mentionnant l’origine du bug
+⇒ `test/feature_name` : In this branch, we develop tests associated to a feature.
 
-⇒ `refact/nom_du_refactor` : Améliorer le code sans forcément ajouter une feature
+⇒ `fix/bug_name` : In this branch, we fix a bug and we mention the origin of the bug.
 
-Pour merge sur main CREER TOUJOURS une pull request `main ← dev` (2 personnes valident avant le merge)
+⇒ `refact/refactor_name` : This branch is dedicated for cleaning and refactoring the code pushed to `dev`
 
-Membres de l'équipe :
+Team members :
 
+- Imadath YAYA
+- Jean ABOU-MOUSSA
+- Malak EL KOURI
+- Saad GUESSOUS
 - Yahia BELLAMINE
+- Yassine Khalakhil
+

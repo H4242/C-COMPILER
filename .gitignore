@@ -1,0 +1,7 @@
+**/ifcc-test-output
+**/antlr
+**/build
+**/generated
+*.o
+*.s
+**ifcc
