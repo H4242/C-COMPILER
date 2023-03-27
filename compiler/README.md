@@ -10,7 +10,9 @@ int main() {
    return N;
 }
 ```
-where `N` is a positive integer constant. 
+
+
+where `N` is a positive integer constant.
 
 ## Source Files
 - `ifcc.g4` contains the grammar in antlr4 format

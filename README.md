@@ -1,6 +1,7 @@
 # PLD-COMP
 
-C compiler written in C++ using antlr4.
+C compiler written in C++ using antlr4. 
+INSA Lyon project
 
 # Git conventions :
 
