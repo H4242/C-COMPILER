@@ -115,6 +115,38 @@ antlrcpp::Any CodeGenVisitor::visitAdd(ifccParser::AddContext *ctx)
 	return name;
 }
 
+antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
+{
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(0)).as<string>();
+
+	string name = temporaryGenerator();
+
+	string OP = ctx->OP()->getText();
+	if (OP == "*")
+	{
+		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
+			 << "\timull\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax" << endl;
+	}
+	else // `%` and `/` operators
+	{
+		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
+			 << "\tcltd\n" // Setup recovery point in case of / 0
+			 << "\tidivl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp)" << endl;
+
+		// Only difference between `%` and `/` is which register we
+		// take the result from : %eax -> `/` , %ead -> `%`
+		if (OP == "%")
+		{
+			cout << "\tmovl\t%edx, %eax" << endl;
+		}
+	}
+
+	cout << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n"
+		 << endl;
+
+	return name;
+}
 /*
 int main(){
 	int a,b,c;
