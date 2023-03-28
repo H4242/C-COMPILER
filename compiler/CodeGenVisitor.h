@@ -7,15 +7,25 @@
 class CodeGenVisitor : public ifccBaseVisitor
 {
 public:
+	// 4.1
 	virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
-	// virtual antlrcpp::Any visitVar(ifccParser::VarContext *ctx) override;
-	virtual antlrcpp::Any visitReturnvar(ifccParser::ReturnvarContext *ctx) override;
-	virtual antlrcpp::Any visitReturnconst(ifccParser::ReturnconstContext *ctx) override;
+	// 4.2
+	virtual antlrcpp::Any visitReturnstmt(ifccParser::ReturnstmtContext *ctx) override;
+	// 4.3
 	virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
-	virtual antlrcpp::Any visitAssignconst(ifccParser::AssignconstContext *ctx) override;
-	virtual antlrcpp::Any visitAssignvar(ifccParser::AssignvarContext *ctx) override;
+	virtual antlrcpp::Any visitAssignment(ifccParser::AssignmentContext *ctx) override;
+	// 4.4
+	virtual antlrcpp::Any visitExprconst(ifccParser::ExprconstContext *ctx) override;
+	virtual antlrcpp::Any visitExprvar(ifccParser::ExprvarContext *ctx) override;
+	virtual antlrcpp::Any visitAdd(ifccParser::AddContext *ctx) override;
+	//  virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
+	//  virtual antlrcpp::Any visitSub(ifccParser::SubContext *ctx) override;
+	//  virtual antlrcpp::Any visitExprpar(ifccParser::ExprparContext *ctx) override;
+
+	// utils
 
 protected:
 	SymbolTable *symbolTable = new SymbolTable();
 	int currentOffset = 0;
+	string temporaryGenerator();
 };
