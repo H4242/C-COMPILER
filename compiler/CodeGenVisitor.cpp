@@ -1,97 +1,126 @@
 #include "CodeGenVisitor.h"
 #include "SymbolTable.h"
+#include <any>
 
-// extern SymbolTable *ptr;
+using namespace std;
+
+// utils
+string CodeGenVisitor::temporaryGenerator()
+{
+	string name = "tmp" + to_string(symbolTable->variableTable.size());
+	Variable tmp = Variable(name, currentOffset -= 4);
+	symbolTable->variableTable[name] = tmp;
+	return name;
+}
+
+// definitions
 antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-	std::cout << ".globl	main\n"
+	std::cout << ".globl\tmain\n"
 				 " main: \n"
 				 // prologue
-				 "	pushq 	%rbp\n"
-				 "	movq 	%rsp, %rbp\n";
+				 "\tpushq\t%rbp\n"
+				 "\tmovq\t%rsp, %rbp\n";
 	visitChildren(ctx);
 	// epilogue
 	std::cout
-		<< "	popq 	%rbp\n"
-		   " 	ret\n";
+		<< "\tpopq\t%rbp\n"
+		   "\tret\n";
 
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitReturnconst(ifccParser::ReturnconstContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
-	int retval = stoi(ctx->CONST()->getText());
-
-	std::cout << " 	movl	$"
-			  << retval << ", %eax\n";
-
-	return 0;
-}
-
-antlrcpp::Any CodeGenVisitor::visitReturnvar(ifccParser::ReturnvarContext *ctx)
-{
-	string variable = ctx->VAR()->getText();
-	// check if the variable doesn't exist
-	if (!symbolTable->existingVariable(variable))
-	{
-		throw std::logic_error("you want to return a variable which was not declared");
-	}
-	cout << "	movl	" << symbolTable->variableTable[variable].getOffset() << "(%rbp), %eax\n";
-	return 0;
+	string name = visit(ctx->expr()).as<string>();
+	cout << "\tmovl\t" << symbolTable->variableTable[name].getOffset() << "(%rbp), %eax\n";
+	return 0; // Dummy return
 }
 
 antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 {
-	if (symbolTable->existingVariable(ctx->VAR()->getText()))
+	int size = ctx->VAR().size();
+	for (int i = 0; i < size; i++)
 	{
-		// return error
-		throw std::logic_error("variable declared twice");
-	}
-	symbolTable->addVariable(ctx->VAR()->getText(), currentOffset -= 4);
-	return 0;
-}
-
-antlrcpp::Any CodeGenVisitor::visitAssignconst(ifccParser::AssignconstContext *ctx)
-{
-	string var;
-	if (ctx->declaration())
-	{
-		visit(ctx->declaration());
-		var = ctx->declaration()->VAR()->getText();
-	}
-	else
-	{
-		if (!symbolTable->existingVariable(ctx->VAR()->getText()))
+		if (symbolTable->existingVariable(ctx->VAR(i)->getText()))
 		{
-			// return error
-			throw std::logic_error("assignment of undeclared variable");
+			throw std::logic_error("variable declared twice");
 		}
-		var = ctx->VAR()->getText();
+		symbolTable->addVariable(ctx->VAR(i)->getText(), currentOffset -= 4);
 	}
+	if (ctx->expr())
+	{
+		string var = ctx->VAR(size - 1)->getText();
 
-	cout << "	movl 	$" << ctx->CONST()->getText() << ", " << currentOffset << "(%rbp)\n";
-	symbolTable->variableTable[var].setValue(stoi(ctx->CONST()->getText()));
+		string rightExpr = visit(ctx->expr()).as<string>();
+
+		cout << "\tmovl\t" << symbolTable->variableTable[rightExpr].getOffset() << "(%rbp)"
+			 << ", %eax\n"
+			 << "\tmovl\t %eax, " << symbolTable->variableTable[var].getOffset() << "(%rbp)" << endl;
+	}
 
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAssignvar(ifccParser::AssignvarContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	if (symbolTable->variableTable.find(ctx->VAR(0)->getText()) == symbolTable->variableTable.end())
+	if (!symbolTable->existingVariable(ctx->VAR()->getText()))
 	{
-		throw std::logic_error("variable not declared");
+		throw std::logic_error("assignment of undeclared variable");
 	}
 
-	if (ctx->declaration())
-	{
-		visit(ctx->declaration());
-		cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp), %eax\n";
-		cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->declaration()->VAR()->getText()].getOffset() << "(%rbp)\n";
-		return 0;
-	}
-	cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(1)->getText()].getOffset() << "(%rbp), %eax\n";
-	cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";
-	// update value in the hashmap
-	symbolTable->variableTable[ctx->VAR(0)->getText()].setValue(symbolTable->variableTable[ctx->VAR(1)->getText()].getValue());
+	string var = ctx->VAR()->getText();
+
+	string rightExpr = visit(ctx->expr()).as<string>();
+
+	cout << "\tmovl\t" << symbolTable->variableTable[rightExpr].getOffset() << "(%rbp)"
+		 << ", %eax\n"
+		 << "\tmovl\t %eax, " << symbolTable->variableTable[var].getOffset() << "(%rbp)" << endl;
+
 	return 0;
 }
+
+antlrcpp::Any CodeGenVisitor::visitExprconst(ifccParser::ExprconstContext *ctx)
+{
+	string name = temporaryGenerator();
+
+	cout << "\tmovl\t$" << ctx->CONST()->getText()
+		 << "," << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitExprvar(ifccParser::ExprvarContext *ctx)
+{
+	string name = ctx->VAR()->getText();
+	if (symbolTable->variableTable.find(name) == symbolTable->variableTable.end())
+	{
+		throw logic_error("assignment to an undeclared variable");
+	}
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitAdd(ifccParser::AddContext *ctx)
+{
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(1)).as<string>();
+
+	string name = temporaryGenerator();
+
+	cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %edx\n"
+		 << "\tmovl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n"
+		 << "\taddl\t%edx, %eax\n"
+		 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+
+	return name;
+}
+
+/*
+int main(){
+	int a,b,c;
+	a=17;
+	b=42;
+	c=a*a + b*b +1;
+	return c;
+}
+*/

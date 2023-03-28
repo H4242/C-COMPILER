@@ -1,5 +1,6 @@
+#include <stdio.h>
 int main()
 {
-    int a = 41;
-    return b;
+    int a = 3, b = 5;
+    return 0;
 }

@@ -2,24 +2,26 @@ grammar ifcc;
 
 axiom: prog;
 
-prog: 'int' 'main' '(' ')' '{' (assignment ';'|declaration ';')*  return_stmt ';' '}';
+prog:
+	'int' 'main' '(' ')' '{' (assignment | declaration)* returnstmt '}';
 
-return_stmt:
-	RETURN CONST	# returnconst
-	| RETURN VAR	# returnvar;
+returnstmt: 'return' expr ';';
 
-declaration: 'int' VAR;
+declaration: 'int' VAR (',' VAR)* ('=' expr)? ';';
 
-assignment:
-	declaration '=' CONST # assignconst
-	| VAR '=' CONST		  # assignconst
-	| declaration '=' VAR # assignvar
-	| VAR '=' VAR		  # assignvar
-	;
+assignment: VAR '=' expr ';';
 
-RETURN: 'return';
-CONST: [0-9]+;
+expr:
+	expr OP expr	# muldiv
+	| expr '+' expr	# add
+	| expr '-' expr	# sub
+	| CONST			# exprconst
+	| VAR			# exprvar
+	| '(' expr ')'	# exprpar;
+
+CONST: '-'? [0-9]+;
 COMMENT: '/*' .*? '*/' -> skip;
 DIRECTIVE: '#' .*? '\n' -> skip;
 WS: [ \t\r\n] -> channel(HIDDEN);
 VAR: ([a-zA-Z_][a-zA-Z0-9_]*);
+OP: ('*' | '/');
