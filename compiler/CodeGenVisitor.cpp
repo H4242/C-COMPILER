@@ -100,18 +100,27 @@ antlrcpp::Any CodeGenVisitor::visitExprvar(ifccParser::ExprvarContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAdd(ifccParser::AddContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 {
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
 	string name = temporaryGenerator();
 
-	cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %edx\n"
-		 << "\tmovl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n"
-		 << "\taddl\t%edx, %eax\n"
-		 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
-
+	string OP = ctx->OPA()->getText();
+	if (OP == "+")
+	{
+		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %edx\n"
+			 << "\tmovl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n"
+			 << "\taddl\t%edx, %eax\n"
+			 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+	}
+	else
+	{
+		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
+			 << "\tsubl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n"
+			 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+	}
 	return name;
 }
 
@@ -122,20 +131,18 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 
 	string name = temporaryGenerator();
 
-	string OP = ctx->OP()->getText();
+	string OP = ctx->OPM()->getText();
 	if (OP == "*")
 	{
 		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
 			 << "\timull\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax" << endl;
 	}
-	else // `%` and `/` operators
+	else
 	{
 		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
-			 << "\tcltd\n" // Setup recovery point in case of / 0
+			 << "\tcltd\n" // case of division by 0
 			 << "\tidivl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp)" << endl;
 
-		// Only difference between `%` and `/` is which register we
-		// take the result from : %eax -> `/` , %ead -> `%`
 		if (OP == "%")
 		{
 			cout << "\tmovl\t%edx, %eax" << endl;

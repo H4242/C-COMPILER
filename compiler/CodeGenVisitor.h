@@ -17,12 +17,9 @@ public:
 	// 4.4
 	virtual antlrcpp::Any visitExprconst(ifccParser::ExprconstContext *ctx) override;
 	virtual antlrcpp::Any visitExprvar(ifccParser::ExprvarContext *ctx) override;
-	virtual antlrcpp::Any visitAdd(ifccParser::AddContext *ctx) override;
+	virtual antlrcpp::Any visitAddsub(ifccParser::AddsubContext *ctx) override;
 	virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
 	virtual antlrcpp::Any visitExprpar(ifccParser::ExprparContext *ctx) override;
-	//  virtual antlrcpp::Any visitSub(ifccParser::SubContext *ctx) override;
-
-	// utils
 
 protected:
 	SymbolTable *symbolTable = new SymbolTable();

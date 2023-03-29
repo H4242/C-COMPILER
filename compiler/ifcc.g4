@@ -12,9 +12,8 @@ declaration: 'int' VAR (',' VAR)* ('=' expr)? ';';
 assignment: VAR '=' expr ';';
 
 expr:
-	expr OP expr	# muldiv
-	| expr '+' expr	# add
-	| expr '-' expr	# sub
+	expr OPM expr	# muldiv
+	| expr OPA expr	# addsub
 	| CONST			# exprconst
 	| VAR			# exprvar
 	| '(' expr ')'	# exprpar;
@@ -24,4 +23,5 @@ COMMENT: '/*' .*? '*/' -> skip;
 DIRECTIVE: '#' .*? '\n' -> skip;
 WS: [ \t\r\n] -> channel(HIDDEN);
 VAR: ([a-zA-Z_][a-zA-Z0-9_]*);
-OP: ('*' | '/');
+OPM: ('*' | '/');
+OPA: ('+' | '-');
