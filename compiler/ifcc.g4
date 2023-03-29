@@ -14,9 +14,12 @@ assignment: VAR '=' expr ';';
 expr:
 	expr OPM expr	# muldiv
 	| expr OPA expr	# addsub
-	| CONST			# exprconst
-	| VAR			# exprvar
-	| '(' expr ')'	# exprpar;
+	| expr OPB expr	# bitexpr
+	| expr OPC expr	# compexpr
+	| OPU expr		# unaryexpr
+	| CONST			# constexpr
+	| VAR			# varexpr
+	| '(' expr ')'	# parexpr;
 
 CONST: '-'? [0-9]+;
 COMMENT: '/*' .*? '*/' -> skip;
@@ -25,3 +28,6 @@ WS: [ \t\r\n] -> channel(HIDDEN);
 VAR: ([a-zA-Z_][a-zA-Z0-9_]*);
 OPM: ('*' | '/');
 OPA: ('+' | '-');
+OPB: ('&' | '|' | '^');
+OPC: ('<' | '>' | '==' | '!=');
+OPU: ('-' | '!');
