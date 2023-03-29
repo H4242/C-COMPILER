@@ -1,6 +1,5 @@
 #include "CodeGenVisitor.h"
 #include "SymbolTable.h"
-#include <any>
 
 using namespace std;
 
@@ -34,7 +33,7 @@ antlrcpp::Any CodeGenVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx
 {
 	string name = visit(ctx->expr()).as<string>();
 	cout << "\tmovl\t" << symbolTable->variableTable[name].getOffset() << "(%rbp), %eax\n";
-	return 0; // Dummy return
+	return 0;
 }
 
 antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
