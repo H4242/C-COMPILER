@@ -1,6 +1,6 @@
 #include <limits.h>
 int main()
 {
-    int a = INT_MAX + 1;
+    int a = (1 + (1 + (1 + 2) / 3) * 2);
     return a;
 }

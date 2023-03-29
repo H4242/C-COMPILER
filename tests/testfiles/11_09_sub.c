@@ -1,6 +1,6 @@
 #include <limits.h>
 int main()
 {
-    int a = INT_MAX + 1;
+    int a = 5 - 4 - 2;
     return a;
 }
