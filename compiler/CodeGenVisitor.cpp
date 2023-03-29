@@ -147,6 +147,11 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 
 	return name;
 }
+
+antlrcpp::Any CodeGenVisitor::visitExprpar(ifccParser::ExprparContext *ctx)
+{
+	return visit(ctx->expr()).as<string>();
+}
 /*
 int main(){
 	int a,b,c;
