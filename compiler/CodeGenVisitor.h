@@ -15,11 +15,14 @@ public:
 	virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
 	virtual antlrcpp::Any visitAssignment(ifccParser::AssignmentContext *ctx) override;
 	// 4.4
-	virtual antlrcpp::Any visitExprconst(ifccParser::ExprconstContext *ctx) override;
-	virtual antlrcpp::Any visitExprvar(ifccParser::ExprvarContext *ctx) override;
+	virtual antlrcpp::Any visitConstexpr(ifccParser::ConstexprContext *ctx) override;
+	virtual antlrcpp::Any visitVarexpr(ifccParser::VarexprContext *ctx) override;
 	virtual antlrcpp::Any visitAddsub(ifccParser::AddsubContext *ctx) override;
 	virtual antlrcpp::Any visitMuldiv(ifccParser::MuldivContext *ctx) override;
-	virtual antlrcpp::Any visitExprpar(ifccParser::ExprparContext *ctx) override;
+	virtual antlrcpp::Any visitParexpr(ifccParser::ParexprContext *ctx) override;
+	virtual antlrcpp::Any visitUnaryexpr(ifccParser::UnaryexprContext *ctx) override;
+	virtual antlrcpp::Any visitBitexpr(ifccParser::BitexprContext *ctx) override;
+	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
 
 protected:
 	SymbolTable *symbolTable = new SymbolTable();

@@ -79,7 +79,7 @@ antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprconst(ifccParser::ExprconstContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 {
 	string name = temporaryGenerator();
 
@@ -89,7 +89,7 @@ antlrcpp::Any CodeGenVisitor::visitExprconst(ifccParser::ExprconstContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprvar(ifccParser::ExprvarContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
 	string name = ctx->VAR()->getText();
 	if (symbolTable->variableTable.find(name) == symbolTable->variableTable.end())
@@ -154,16 +154,92 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitExprpar(ifccParser::ExprparContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitParexpr(ifccParser::ParexprContext *ctx)
 {
 	return visit(ctx->expr()).as<string>();
 }
-/*
-int main(){
-	int a,b,c;
-	a=17;
-	b=42;
-	c=a*a + b*b +1;
-	return c;
+
+antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
+{
+	string name = temporaryGenerator();
+
+	string expr = visit(ctx->expr()).as<string>();
+
+	cout << "\tmovl\t" << symbolTable->variableTable[expr].getOffset() << "(%rbp), %eax\n";
+
+	string OP = ctx->OPU()->getText();
+	if (OP == "-")
+	{
+		cout << "\tnegl\t%eax\n";
+	}
+	else
+	{
+		cout << "\tnotl\t%eax\n";
+	}
+
+	cout << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+
+	return name;
 }
-*/
+
+antlrcpp::Any CodeGenVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
+{
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(1)).as<string>();
+
+	string name = temporaryGenerator();
+
+	cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n";
+
+	string OP = ctx->OPB()->getText();
+	if (OP == "&")
+	{
+		cout << "\tandl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+	}
+	else if (OP == "|")
+	{
+		cout << "\torl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+	}
+	else
+	{
+		cout << "\txorl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+	}
+
+	cout << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
+{
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(1)).as<string>();
+
+	string name = temporaryGenerator();
+
+	cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
+		 << "\tcmpl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+
+	string OP = ctx->OPC()->getText();
+	if (OP == ">")
+	{
+		cout << "\tsetg\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+	else if (OP == "<")
+	{
+		cout << "\tsetl\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+	else if (OP == "==")
+	{
+		cout << "\tsete\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+	else
+	{
+		cout << "\tsetne\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+
+	cout << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+		 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+
+	return name;
+}
