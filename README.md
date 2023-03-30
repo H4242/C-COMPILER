@@ -1,6 +1,6 @@
 # PLD-COMP
 
-C compilator written in C++
+C compiler written in C++
 
 # Git conventions :
 
@@ -23,5 +23,5 @@ Team members :
 - Malak EL KOURI
 - Saad GUESSOUS
 - Yahia BELLAMINE
-- Yassine Khalakhil
+- Yassine KHALAKHIL
 
