@@ -127,7 +127,7 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 {
 	string left = visit(ctx->expr(0)).as<string>();
-	string right = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(1)).as<string>();
 
 	string name = temporaryGenerator();
 
