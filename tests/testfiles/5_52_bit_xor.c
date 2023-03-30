@@ -1,5 +1,5 @@
 int main()
 {
-    int a = INT_MAX + 1;
+    a = 99 ^ 42;
     return a;
 }
