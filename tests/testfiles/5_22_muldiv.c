@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 int main()
 {
     int a, b, c;
@@ -6,13 +5,4 @@ int main()
     b = 42;
     c = a * a + b * b + 1;
     return c;
-=======
-int main()
-{
-    int a, b, c;
-    a = 17;
-    b = 42;
-    c = a * a + b * b + 1;
-    return c;
->>>>>>> Stashed changes
 }

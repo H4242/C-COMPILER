@@ -1,7 +1,6 @@
 int main()
 {
-    int a;
-    int b = 100;
-    int c = b / a;
-    return c;
+    int a = 2;
+    int b = 10;
+    return (100 / b) / a;
 }
