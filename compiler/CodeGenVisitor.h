@@ -29,6 +29,7 @@ public:
 
 protected:
 	unordered_map<string, int> symbolTable = {};
+	unordered_map<string, bool> usedVariables = {};
 	int currentOffset = 0;
 	string temporaryGenerator();
 };
