@@ -1,5 +1,5 @@
 int main()
 {
-    int a = 41;
+    int a = a + 2;
     return a;
 }

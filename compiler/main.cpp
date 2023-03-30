@@ -9,7 +9,6 @@
 #include "generated/ifccBaseVisitor.h"
 
 #include "CodeGenVisitor.h"
-#include "SymbolTable.h"
 using namespace antlr4;
 using namespace std;
 

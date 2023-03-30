@@ -1,97 +1,246 @@
 #include "CodeGenVisitor.h"
-#include "SymbolTable.h"
+#include <any>
 
-// extern SymbolTable *ptr;
+using namespace std;
+
+// utils
+string CodeGenVisitor::temporaryGenerator()
+{
+	string name = "t_" + to_string(symbolTable.size());
+	currentOffset -= 4;
+	symbolTable[name] = currentOffset;
+	return name;
+}
+
+// definitions
 antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-	std::cout << ".globl	main\n"
+	std::cout << ".globl\tmain\n"
 				 " main: \n"
 				 // prologue
-				 "	pushq 	%rbp\n"
-				 "	movq 	%rsp, %rbp\n";
+				 "\tpushq\t%rbp\n"
+				 "\tmovq\t%rsp, %rbp\n";
 	visitChildren(ctx);
 	// epilogue
 	std::cout
-		<< "	popq 	%rbp\n"
-		   " 	ret\n";
+		<< "\tpopq\t%rbp\n"
+		   "\tret\n";
 
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitReturnconst(ifccParser::ReturnconstContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
-	int retval = stoi(ctx->CONST()->getText());
-
-	std::cout << " 	movl	$"
-			  << retval << ", %eax\n";
-
-	return 0;
-}
-
-antlrcpp::Any CodeGenVisitor::visitReturnvar(ifccParser::ReturnvarContext *ctx)
-{
-	string variable = ctx->VAR()->getText();
-	// check if the variable doesn't exist
-	if (!symbolTable->existingVariable(variable))
-	{
-		throw std::logic_error("you want to return a variable which was not declared");
-	}
-	cout << "	movl	" << symbolTable->variableTable[variable].getOffset() << "(%rbp), %eax\n";
-	return 0;
+	string name = visit(ctx->expr()).as<string>();
+	cout << "\tmovl\t" << symbolTable[name] << "(%rbp), %eax\n";
+	return 0; // Dummy return
 }
 
 antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 {
-	if (symbolTable->existingVariable(ctx->VAR()->getText()))
+	int size = ctx->VAR().size();
+	for (int i = 0; i < size; i++)
 	{
-		// return error
-		throw std::logic_error("variable declared twice");
+		if (symbolTable.find(ctx->VAR(i)->getText()) != symbolTable.end())
+		{
+			throw std::logic_error("variable declared twice");
+		}
+		currentOffset -= 4;
+		symbolTable[ctx->VAR(i)->getText()] = currentOffset;
 	}
-	symbolTable->addVariable(ctx->VAR()->getText(), currentOffset -= 4);
+	if (ctx->expr())
+	{
+		string var = ctx->VAR(size - 1)->getText();
+
+		string rightExpr = visit(ctx->expr()).as<string>();
+
+		cout << "\tmovl\t" << symbolTable[rightExpr] << "(%rbp)"
+			 << ", %eax\n"
+			 << "\tmovl\t %eax, " << symbolTable[var] << "(%rbp)" << endl;
+	}
+
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAssignconst(ifccParser::AssignconstContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	string var;
-	if (ctx->declaration())
+	if (symbolTable.find(ctx->VAR()->getText()) == symbolTable.end())
 	{
-		visit(ctx->declaration());
-		var = ctx->declaration()->VAR()->getText();
+		throw std::logic_error("assignment of undeclared variable");
+	}
+
+	string var = ctx->VAR()->getText();
+
+	string rightExpr = visit(ctx->expr()).as<string>();
+
+	cout << "\tmovl\t" << symbolTable[rightExpr] << "(%rbp)"
+		 << ", %eax\n"
+		 << "\tmovl\t %eax, " << symbolTable[var] << "(%rbp)" << endl;
+
+	return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
+{
+	string name = temporaryGenerator();
+
+	cout << "\tmovl\t$" << ctx->CONST()->getText()
+		 << "," << symbolTable[name] << "(%rbp)\n";
+
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
+{
+	string name = ctx->VAR()->getText();
+	if (symbolTable.find(name) == symbolTable.end())
+	{
+		throw logic_error("assignment to an undeclared variable");
+	}
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
+{
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(1)).as<string>();
+
+	string name = temporaryGenerator();
+
+	string OP = ctx->OPA()->getText();
+	if (OP == "+")
+	{
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %edx\n"
+			 << "\tmovl\t" << symbolTable[right] << "(%rbp), %eax\n"
+			 << "\taddl\t%edx, %eax\n"
+			 << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
 	}
 	else
 	{
-		if (!symbolTable->existingVariable(ctx->VAR()->getText()))
-		{
-			// return error
-			throw std::logic_error("assignment of undeclared variable");
-		}
-		var = ctx->VAR()->getText();
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
+			 << "\tsubl\t" << symbolTable[right] << "(%rbp), %eax\n"
+			 << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
 	}
-
-	cout << "	movl 	$" << ctx->CONST()->getText() << ", " << currentOffset << "(%rbp)\n";
-	symbolTable->variableTable[var].setValue(stoi(ctx->CONST()->getText()));
-
-	return 0;
+	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAssignvar(ifccParser::AssignvarContext *ctx)
+antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 {
-	if (symbolTable->variableTable.find(ctx->VAR(0)->getText()) == symbolTable->variableTable.end())
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(0)).as<string>();
+
+	string name = temporaryGenerator();
+
+	string OP = ctx->OPM()->getText();
+	if (OP == "*")
 	{
-		throw std::logic_error("variable not declared");
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
+			 << "\timull\t" << symbolTable[right] << "(%rbp), %eax" << endl;
+	}
+	else
+	{
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
+			 << "\tcltd\n" // case of division by 0
+			 << "\tidivl\t" << symbolTable[right] << "(%rbp)" << endl;
+
+		if (OP == "%")
+		{
+			cout << "\tmovl\t%edx, %eax" << endl;
+		}
 	}
 
-	if (ctx->declaration())
+	cout << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n"
+		 << endl;
+
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitParexpr(ifccParser::ParexprContext *ctx)
+{
+	return visit(ctx->expr()).as<string>();
+}
+
+antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
+{
+	string name = temporaryGenerator();
+
+	string expr = visit(ctx->expr()).as<string>();
+
+	cout << "\tmovl\t" << symbolTable[expr] << "(%rbp), %eax\n";
+
+	string OP = ctx->OPU()->getText();
+	if (OP == "-")
 	{
-		visit(ctx->declaration());
-		cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp), %eax\n";
-		cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->declaration()->VAR()->getText()].getOffset() << "(%rbp)\n";
-		return 0;
+		cout << "\tnegl\t%eax\n";
 	}
-	cout << "	movl 	" << symbolTable->variableTable[ctx->VAR(1)->getText()].getOffset() << "(%rbp), %eax\n";
-	cout << "	movl 	%eax, " << symbolTable->variableTable[ctx->VAR(0)->getText()].getOffset() << "(%rbp)\n";
-	// update value in the hashmap
-	symbolTable->variableTable[ctx->VAR(0)->getText()].setValue(symbolTable->variableTable[ctx->VAR(1)->getText()].getValue());
-	return 0;
+	else
+	{
+		cout << "\tnotl\t%eax\n";
+	}
+
+	cout << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
+
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
+{
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(1)).as<string>();
+
+	string name = temporaryGenerator();
+
+	cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n";
+
+	string OP = ctx->OPB()->getText();
+	if (OP == "&")
+	{
+		cout << "\tandl\t" << symbolTable[right] << "(%rbp), %eax\n";
+	}
+	else if (OP == "|")
+	{
+		cout << "\torl\t" << symbolTable[right] << "(%rbp), %eax\n";
+	}
+	else
+	{
+		cout << "\txorl\t" << symbolTable[right] << "(%rbp), %eax\n";
+	}
+
+	cout << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
+
+	return name;
+}
+
+antlrcpp::Any CodeGenVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
+{
+	string left = visit(ctx->expr(0)).as<string>();
+	string right = visit(ctx->expr(1)).as<string>();
+
+	string name = temporaryGenerator();
+
+	cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
+		 << "\tcmpl\t" << symbolTable[right] << "(%rbp), %eax\n";
+
+	string OP = ctx->OPC()->getText();
+	if (OP == ">")
+	{
+		cout << "\tsetg\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+	else if (OP == "<")
+	{
+		cout << "\tsetl\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+	else if (OP == "==")
+	{
+		cout << "\tsete\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+	else
+	{
+		cout << "\tsetne\t%al\n"; // %al is 0 or 1 (8 bits)
+	}
+
+	cout << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+		 << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
+
+	return name;
 }
