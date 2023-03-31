@@ -30,7 +30,7 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 	{
 		if (!var.second)
 		{
-			throw std::logic_error("error: variable declared but not used");
+			cerr << "warning: variable " << var.first << " declared but not used\n";
 		}
 	}
 
