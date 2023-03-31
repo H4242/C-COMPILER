@@ -9,6 +9,7 @@
 #include "generated/ifccBaseVisitor.h"
 
 #include "CodeGenVisitor.h"
+#include "DeclarationVisitor.h"
 using namespace antlr4;
 using namespace std;
 
@@ -49,6 +50,9 @@ int main(int argn, const char **argv)
   */
 
   // create symbolTable for the scope
+
+  DeclarationVisitor d;
+  d.visit(tree);
 
   CodeGenVisitor v;
   v.visit(tree);
