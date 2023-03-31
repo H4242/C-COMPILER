@@ -1,14 +1,14 @@
 #include "CodeGenVisitor.h"
-#include "SymbolTable.h"
+#include <any>
 
 using namespace std;
 
 // utils
 string CodeGenVisitor::temporaryGenerator()
 {
-	string name = "tmp" + to_string(symbolTable->variableTable.size());
-	Variable tmp = Variable(name, currentOffset -= 4);
-	symbolTable->variableTable[name] = tmp;
+	string name = "t_" + to_string(symbolTable.size());
+	currentOffset -= 4;
+	symbolTable[name] = currentOffset;
 	return name;
 }
 
@@ -26,14 +26,22 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 		<< "\tpopq\t%rbp\n"
 		   "\tret\n";
 
+	for (auto &var : usedVariables)
+	{
+		if (!var.second)
+		{
+			cerr << "warning: variable " << var.first << " declared but not used\n";
+		}
+	}
+
 	return 0;
 }
 
 antlrcpp::Any CodeGenVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
 	string name = visit(ctx->expr()).as<string>();
-	cout << "\tmovl\t" << symbolTable->variableTable[name].getOffset() << "(%rbp), %eax\n";
-	return 0;
+	cout << "\tmovl\t" << symbolTable[name] << "(%rbp), %eax\n";
+	return 0; // Dummy return
 }
 
 antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
@@ -41,11 +49,13 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 	int size = ctx->VAR().size();
 	for (int i = 0; i < size; i++)
 	{
-		if (symbolTable->existingVariable(ctx->VAR(i)->getText()))
+		if (symbolTable.find(ctx->VAR(i)->getText()) != symbolTable.end())
 		{
-			throw std::logic_error("variable declared twice");
+			throw std::logic_error("error: variable declared twice");
 		}
-		symbolTable->addVariable(ctx->VAR(i)->getText(), currentOffset -= 4);
+		currentOffset -= 4;
+		symbolTable[ctx->VAR(i)->getText()] = currentOffset;
+		usedVariables[ctx->VAR(i)->getText()] = false;
 	}
 	if (ctx->expr())
 	{
@@ -53,9 +63,9 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 
 		string rightExpr = visit(ctx->expr()).as<string>();
 
-		cout << "\tmovl\t" << symbolTable->variableTable[rightExpr].getOffset() << "(%rbp)"
+		cout << "\tmovl\t" << symbolTable[rightExpr] << "(%rbp)"
 			 << ", %eax\n"
-			 << "\tmovl\t %eax, " << symbolTable->variableTable[var].getOffset() << "(%rbp)" << endl;
+			 << "\tmovl\t %eax, " << symbolTable[var] << "(%rbp)" << endl;
 	}
 
 	return 0;
@@ -63,18 +73,20 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 
 antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	if (!symbolTable->existingVariable(ctx->VAR()->getText()))
+	if (symbolTable.find(ctx->VAR()->getText()) == symbolTable.end())
 	{
-		throw std::logic_error("assignment of undeclared variable");
+		throw std::logic_error("error: assignment of undeclared variable");
 	}
 
 	string var = ctx->VAR()->getText();
 
 	string rightExpr = visit(ctx->expr()).as<string>();
 
-	cout << "\tmovl\t" << symbolTable->variableTable[rightExpr].getOffset() << "(%rbp)"
+	cout << "\tmovl\t" << symbolTable[rightExpr] << "(%rbp)"
 		 << ", %eax\n"
-		 << "\tmovl\t %eax, " << symbolTable->variableTable[var].getOffset() << "(%rbp)" << endl;
+		 << "\tmovl\t %eax, " << symbolTable[var] << "(%rbp)" << endl;
+
+	usedVariables[var] = true;
 
 	return 0;
 }
@@ -84,7 +96,7 @@ antlrcpp::Any CodeGenVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 	string name = temporaryGenerator();
 
 	cout << "\tmovl\t$" << ctx->CONST()->getText()
-		 << "," << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+		 << "," << symbolTable[name] << "(%rbp)\n";
 
 	return name;
 }
@@ -92,10 +104,11 @@ antlrcpp::Any CodeGenVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 antlrcpp::Any CodeGenVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
 	string name = ctx->VAR()->getText();
-	if (symbolTable->variableTable.find(name) == symbolTable->variableTable.end())
+	if (symbolTable.find(name) == symbolTable.end())
 	{
-		throw logic_error("assignment to an undeclared variable");
+		throw logic_error("error: undeclared variable");
 	}
+	usedVariables[name] = true;
 	return name;
 }
 
@@ -109,16 +122,16 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 	string OP = ctx->OPA()->getText();
 	if (OP == "+")
 	{
-		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %edx\n"
-			 << "\tmovl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n"
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %edx\n"
+			 << "\tmovl\t" << symbolTable[right] << "(%rbp), %eax\n"
 			 << "\taddl\t%edx, %eax\n"
-			 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+			 << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
 	}
 	else
 	{
-		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
-			 << "\tsubl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n"
-			 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
+			 << "\tsubl\t" << symbolTable[right] << "(%rbp), %eax\n"
+			 << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
 	}
 	return name;
 }
@@ -133,14 +146,14 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 	string OP = ctx->OPM()->getText();
 	if (OP == "*")
 	{
-		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
-			 << "\timull\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax" << endl;
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
+			 << "\timull\t" << symbolTable[right] << "(%rbp), %eax" << endl;
 	}
 	else
 	{
-		cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
+		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
 			 << "\tcltd\n" // case of division by 0
-			 << "\tidivl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp)" << endl;
+			 << "\tidivl\t" << symbolTable[right] << "(%rbp)" << endl;
 
 		if (OP == "%")
 		{
@@ -148,7 +161,7 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 		}
 	}
 
-	cout << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n"
+	cout << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n"
 		 << endl;
 
 	return name;
@@ -165,7 +178,7 @@ antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 
 	string expr = visit(ctx->expr()).as<string>();
 
-	cout << "\tmovl\t" << symbolTable->variableTable[expr].getOffset() << "(%rbp), %eax\n";
+	cout << "\tmovl\t" << symbolTable[expr] << "(%rbp), %eax\n";
 
 	string OP = ctx->OPU()->getText();
 	if (OP == "-")
@@ -177,7 +190,7 @@ antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 		cout << "\tnotl\t%eax\n";
 	}
 
-	cout << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+	cout << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
 
 	return name;
 }
@@ -189,23 +202,23 @@ antlrcpp::Any CodeGenVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 
 	string name = temporaryGenerator();
 
-	cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n";
+	cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n";
 
 	string OP = ctx->OPB()->getText();
 	if (OP == "&")
 	{
-		cout << "\tandl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+		cout << "\tandl\t" << symbolTable[right] << "(%rbp), %eax\n";
 	}
 	else if (OP == "|")
 	{
-		cout << "\torl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+		cout << "\torl\t" << symbolTable[right] << "(%rbp), %eax\n";
 	}
 	else
 	{
-		cout << "\txorl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+		cout << "\txorl\t" << symbolTable[right] << "(%rbp), %eax\n";
 	}
 
-	cout << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+	cout << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
 
 	return name;
 }
@@ -217,8 +230,8 @@ antlrcpp::Any CodeGenVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 
 	string name = temporaryGenerator();
 
-	cout << "\tmovl\t" << symbolTable->variableTable[left].getOffset() << "(%rbp), %eax\n"
-		 << "\tcmpl\t" << symbolTable->variableTable[right].getOffset() << "(%rbp), %eax\n";
+	cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
+		 << "\tcmpl\t" << symbolTable[right] << "(%rbp), %eax\n";
 
 	string OP = ctx->OPC()->getText();
 	if (OP == ">")
@@ -239,7 +252,7 @@ antlrcpp::Any CodeGenVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	}
 
 	cout << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
-		 << "\tmovl\t%eax, " << symbolTable->variableTable[name].getOffset() << "(%rbp)\n";
+		 << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";
 
 	return name;
 }

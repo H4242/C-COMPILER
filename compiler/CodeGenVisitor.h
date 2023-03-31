@@ -1,8 +1,11 @@
 #pragma once
 
+#include <unordered_map>
 #include "antlr4-runtime.h"
+#include <string>
 #include "generated/ifccBaseVisitor.h"
-#include "SymbolTable.h"
+
+using namespace std;
 
 class CodeGenVisitor : public ifccBaseVisitor
 {
@@ -25,7 +28,8 @@ public:
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
 
 protected:
-	SymbolTable *symbolTable = new SymbolTable();
+	unordered_map<string, int> symbolTable = {};
+	unordered_map<string, bool> usedVariables = {};
 	int currentOffset = 0;
 	string temporaryGenerator();
 };
