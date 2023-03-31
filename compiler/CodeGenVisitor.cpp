@@ -26,6 +26,14 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 		<< "\tpopq\t%rbp\n"
 		   "\tret\n";
 
+	for (auto &var : usedVariables)
+	{
+		if (!var.second)
+		{
+			throw std::logic_error("error: variable declared but not used");
+		}
+	}
+
 	return 0;
 }
 
@@ -43,10 +51,11 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 	{
 		if (symbolTable.find(ctx->VAR(i)->getText()) != symbolTable.end())
 		{
-			throw std::logic_error("variable declared twice");
+			throw std::logic_error("error: variable declared twice");
 		}
 		currentOffset -= 4;
 		symbolTable[ctx->VAR(i)->getText()] = currentOffset;
+		usedVariables[ctx->VAR(i)->getText()] = false;
 	}
 	if (ctx->expr())
 	{
@@ -66,7 +75,7 @@ antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx
 {
 	if (symbolTable.find(ctx->VAR()->getText()) == symbolTable.end())
 	{
-		throw std::logic_error("assignment of undeclared variable");
+		throw std::logic_error("error: assignment of undeclared variable");
 	}
 
 	string var = ctx->VAR()->getText();
@@ -76,6 +85,8 @@ antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx
 	cout << "\tmovl\t" << symbolTable[rightExpr] << "(%rbp)"
 		 << ", %eax\n"
 		 << "\tmovl\t %eax, " << symbolTable[var] << "(%rbp)" << endl;
+
+	usedVariables[var] = true;
 
 	return 0;
 }
@@ -95,8 +106,9 @@ antlrcpp::Any CodeGenVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 	string name = ctx->VAR()->getText();
 	if (symbolTable.find(name) == symbolTable.end())
 	{
-		throw logic_error("assignment to an undeclared variable");
+		throw logic_error("error: undeclared variable");
 	}
+	usedVariables[name] = true;
 	return name;
 }
 
