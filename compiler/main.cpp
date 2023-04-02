@@ -8,7 +8,7 @@
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
 
-#include "CodeGenVisitor.h"
+#include "ASTVisitor.h"
 using namespace antlr4;
 using namespace std;
 
@@ -50,7 +50,7 @@ int main(int argn, const char **argv)
 
   // create symbolTable for the scope
 
-  CodeGenVisitor v;
+  ASTVisitor v;
   v.visit(tree);
 
   return 0;

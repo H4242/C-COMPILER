@@ -1,10 +1,10 @@
-#include "CodeGenVisitor.h"
+#include "ASTVisitor.h"
 #include <any>
 
 using namespace std;
 
 // utils
-string CodeGenVisitor::temporaryGenerator()
+string ASTVisitor::temporaryGenerator()
 {
 	string name = "t_" + to_string(symbolTable.size());
 	currentOffset -= 4;
@@ -13,18 +13,11 @@ string CodeGenVisitor::temporaryGenerator()
 }
 
 // definitions
-antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
+antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-	std::cout << ".globl\tmain\n"
-				 " main: \n"
-				 // prologue
-				 "\tpushq\t%rbp\n"
-				 "\tmovq\t%rsp, %rbp\n";
+	cfg = new CFG("main");
+
 	visitChildren(ctx);
-	// epilogue
-	std::cout
-		<< "\tpopq\t%rbp\n"
-		   "\tret\n";
 
 	for (auto &var : usedVariables)
 	{
@@ -37,14 +30,14 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
+antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
 	string name = visit(ctx->expr()).as<string>();
 	cout << "\tmovl\t" << symbolTable[name] << "(%rbp), %eax\n";
 	return 0; // Dummy return
 }
 
-antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
+antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 {
 	int size = ctx->VAR().size();
 	for (int i = 0; i < size; i++)
@@ -71,7 +64,7 @@ antlrcpp::Any CodeGenVisitor::visitDeclaration(ifccParser::DeclarationContext *c
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
+antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
 	if (symbolTable.find(ctx->VAR()->getText()) == symbolTable.end())
 	{
@@ -91,7 +84,7 @@ antlrcpp::Any CodeGenVisitor::visitAssignment(ifccParser::AssignmentContext *ctx
 	return 0;
 }
 
-antlrcpp::Any CodeGenVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
+antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 {
 	string name = temporaryGenerator();
 
@@ -101,7 +94,7 @@ antlrcpp::Any CodeGenVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
+antlrcpp::Any ASTVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
 	string name = ctx->VAR()->getText();
 	if (symbolTable.find(name) == symbolTable.end())
@@ -112,7 +105,7 @@ antlrcpp::Any CodeGenVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
+antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 {
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
@@ -136,7 +129,7 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
+antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 {
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
@@ -167,12 +160,12 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitParexpr(ifccParser::ParexprContext *ctx)
+antlrcpp::Any ASTVisitor::visitParexpr(ifccParser::ParexprContext *ctx)
 {
 	return visit(ctx->expr()).as<string>();
 }
 
-antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
+antlrcpp::Any ASTVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 {
 	string name = temporaryGenerator();
 
@@ -195,7 +188,7 @@ antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
+antlrcpp::Any ASTVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 {
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
@@ -223,7 +216,7 @@ antlrcpp::Any CodeGenVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 	return name;
 }
 
-antlrcpp::Any CodeGenVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
+antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 {
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
