@@ -163,7 +163,6 @@ if args.debug:
 ######################################################################################
 ## TEST step: actually compile all test-cases with both compilers
 
-exit_code=0
 successful_tests = 0
 failed_tests = 0
 
