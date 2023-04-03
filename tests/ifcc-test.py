@@ -163,6 +163,10 @@ if args.debug:
 ######################################################################################
 ## TEST step: actually compile all test-cases with both compilers
 
+exit_code=0
+successful_tests = 0
+failed_tests = 0
+
 for jobname in jobs:
     os.chdir(orig_cwd)
 
@@ -185,14 +189,17 @@ for jobname in jobs:
     if gccstatus != 0 and ifccstatus != 0:
         ## ifcc correctly rejects invalid program -> test-case ok
         print("TEST OK")
+        successful_tests += 1
         continue
     elif gccstatus != 0 and ifccstatus == 0:
         ## ifcc wrongly accepts invalid program -> error
         print("TEST FAIL (your compiler accepts an invalid program)")
+        failed_tests += 1
         continue
     elif gccstatus == 0 and ifccstatus != 0:
         ## ifcc wrongly rejects valid program -> error
         print("TEST FAIL (your compiler rejects a valid program)")
+        failed_tests += 1
         if args.verbose:
             dumpfile("ifcc-compile.txt")
         continue
@@ -201,6 +208,7 @@ for jobname in jobs:
         ldstatus=command("gcc -o exe-ifcc asm-ifcc.s", "ifcc-link.txt")
         if ldstatus:
             print("TEST FAIL (your compiler produces incorrect assembly)")
+            failed_tests += 1
             if args.verbose:
                 dumpfile("ifcc-link.txt")
             continue
@@ -211,6 +219,7 @@ for jobname in jobs:
     command("./exe-ifcc","ifcc-execute.txt")
     if open("gcc-execute.txt").read() != open("ifcc-execute.txt").read() :
         print("TEST FAIL (different results at execution)")
+        failed_tests += 1
         if args.verbose:
             print("GCC:")
             dumpfile("gcc-execute.txt")
@@ -220,3 +229,9 @@ for jobname in jobs:
 
     ## last but not least
     print("TEST OK")
+    successful_tests += 1
+
+print("SUMMARY: "+str(successful_tests)+" tests succeeded, "+str(failed_tests)+" tests failed")
+
+if(failed_tests != 0):
+    sys.exit(1)
