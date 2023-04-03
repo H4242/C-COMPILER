@@ -11,6 +11,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Install dependencies
+      run: sudo apt install antlr4 libantlr4-runtime-dev default-jdk
+
     - name: Build compiler
       working-directory: ./compiler/
       run: make
