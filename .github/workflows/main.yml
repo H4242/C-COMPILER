@@ -11,6 +11,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Build compiler
+      working-directory: ./compiler/
+      run: make
+      shell: bash
+
     - name: Run tests
       working-directory: ./tests/
       run: python3 ifcc-test.py testfiles
