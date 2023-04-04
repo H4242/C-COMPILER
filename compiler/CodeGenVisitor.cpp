@@ -93,7 +93,7 @@ antlrcpp::Any CodeGenVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 
 	string name = temporaryGenerator();
 
-	string OP = ctx->OPA()->getText();
+	string OP = ctx->op->getText();
 	if (OP == "+")
 	{
 		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %edx\n"
@@ -117,7 +117,7 @@ antlrcpp::Any CodeGenVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 
 	string name = temporaryGenerator();
 
-	string OP = ctx->OPM()->getText();
+	string OP = ctx->op->getText();
 	if (OP == "*")
 	{
 		cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
@@ -154,7 +154,7 @@ antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 
 	cout << "\tmovl\t" << symbolTable[expr] << "(%rbp), %eax\n";
 
-	string OP = ctx->OPU()->getText();
+	string OP = ctx->op->getText();
 	if (OP == "-")
 	{
 		cout << "\tnegl\t%eax\n";
@@ -178,7 +178,7 @@ antlrcpp::Any CodeGenVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 
 	cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n";
 
-	string OP = ctx->OPB()->getText();
+	string OP = ctx->op->getText();
 	if (OP == "&")
 	{
 		cout << "\tandl\t" << symbolTable[right] << "(%rbp), %eax\n";
@@ -207,7 +207,7 @@ antlrcpp::Any CodeGenVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	cout << "\tmovl\t" << symbolTable[left] << "(%rbp), %eax\n"
 		 << "\tcmpl\t" << symbolTable[right] << "(%rbp), %eax\n";
 
-	string OP = ctx->OPC()->getText();
+	string OP = ctx->op->getText();
 	if (OP == ">")
 	{
 		cout << "\tsetg\t%al\n"; // %al is 0 or 1 (8 bits)
