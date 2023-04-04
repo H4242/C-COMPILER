@@ -6,6 +6,33 @@
 #include <iostream>
 #include <initializer_list>
 
+class IRInstr;
+
+class BasicBlock
+{
+public:
+  BasicBlock(string entry_label);
+  void add_IRInstr(IRInstr::Operation op, Type t, vector<string> params);
+  void gen_IR(ostream &o); /**< x86 assembly code generation for this basic block (very simple) */
+  void set_exit_true(BasicBlock *bb);
+  BasicBlock *get_exit_true();
+  void set_exit_false(BasicBlock *bb);
+  BasicBlock *get_exit_false();
+  void set_test_var_name(string name);
+  string get_test_var_name();
+  string get_label();
+
+protected:
+  BasicBlock *exit_true;    /**< pointer to the next basic block, true branch. If nullptr, return from procedure */
+  BasicBlock *exit_false;   /**< pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump */
+  string label;             /** < the CFG where this block belongs */
+  vector<IRInstr *> instrs; /** < the instructions themselves. */
+  string test_var_name;     /** < when generating IR code for an if(expr) or while(expr) etc,
+                                                        store here the name of the variable that holds the value of expr */
+};
+
+#endif
+
 /**  The class for a basic block */
 
 /* A few important comments.
@@ -31,23 +58,3 @@ Possible optimization:
        generates an actual assembly comparison
        followed by a conditional jump to the exit_false branch
 */
-
-class BasicBlock
-{
-public:
-  BasicBlock(CFG *cfg, string entry_label);
-
-  void add_IRInstr(IRInstr::Operation op, Type t, vector<string> params);
-
-  // No encapsulation whatsoever here. Feel free to do better.
-  BasicBlock *exit_true;    /**< pointer to the next basic block, true branch. If nullptr, return from procedure */
-  BasicBlock *exit_false;   /**< pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump */
-  string label;             /**< label of the BB, also will be the label in the generated code */
-  CFG *cfg;                 /** < the CFG where this block belongs */
-  vector<IRInstr *> instrs; /** < the instructions themselves. */
-  string test_var_name;     /** < when generating IR code for an if(expr) or while(expr) etc,
-                                                        store here the name of the variable that holds the value of expr */
-protected:
-};
-
-#endif
