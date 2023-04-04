@@ -3,15 +3,6 @@
 
 using namespace std;
 
-// utils
-string ASTVisitor::temporaryGenerator()
-{
-	string name = "t_" + to_string(symbolTable.size());
-	currentOffset -= 4;
-	symbolTable[name] = currentOffset;
-	return name;
-}
-
 // definitions
 antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
@@ -40,25 +31,21 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 {
 	int size = ctx->VAR().size();
+	Type type = Type(ctx->type);
+
 	for (int i = 0; i < size; i++)
 	{
-		if (symbolTable.find(ctx->VAR(i)->getText()) != symbolTable.end())
+		if (cfg->is_in_symbol_table(ctx->VAR(i)->getText()))
 		{
 			throw std::logic_error("error: variable declared twice");
 		}
-		currentOffset -= 4;
-		symbolTable[ctx->VAR(i)->getText()] = currentOffset;
-		usedVariables[ctx->VAR(i)->getText()] = false;
+		cfg->add_to_symbol_table(ctx->VAR(i)->getText(), type);
 	}
 	if (ctx->expr())
 	{
 		string var = ctx->VAR(size - 1)->getText();
 
 		string rightExpr = visit(ctx->expr()).as<string>();
-
-		cout << "\tmovl\t" << symbolTable[rightExpr] << "(%rbp)"
-			 << ", %eax\n"
-			 << "\tmovl\t %eax, " << symbolTable[var] << "(%rbp)" << endl;
 	}
 
 	return 0;
@@ -74,12 +61,17 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 	string var = ctx->VAR()->getText();
 
 	string rightExpr = visit(ctx->expr()).as<string>();
+	Operation operation;
+	if (ifccParser::ConstexprContext * v == dynamic_cast<ifccParser::ConstexprContext *>(ctx->expr()))
+	{
+		operation = Ldconst();
+	}
+	else
+	{
+		operation = Copy();
+	}
 
-	cout << "\tmovl\t" << symbolTable[rightExpr] << "(%rbp)"
-		 << ", %eax\n"
-		 << "\tmovl\t %eax, " << symbolTable[var] << "(%rbp)" << endl;
-
-	usedVariables[var] = true;
+	IRInstr instruction = IRInstr(operation, cfg->get_var_type(var), {var, rightExpr});
 
 	return 0;
 }
@@ -90,6 +82,8 @@ antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 
 	cout << "\tmovl\t$" << ctx->CONST()->getText()
 		 << "," << symbolTable[name] << "(%rbp)\n";
+	Operation op = Ldconst();
+	IRInstr intruction = IRInstr(op, cfg->get_var_type(name), {symbolTable[name]});
 
 	return name;
 }

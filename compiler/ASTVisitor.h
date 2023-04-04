@@ -30,6 +30,5 @@ public:
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
 
 protected:
-	string temporaryGenerator();
 	CFG *cfg;
 };

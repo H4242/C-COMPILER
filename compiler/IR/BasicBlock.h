@@ -5,7 +5,10 @@
 #include <string>
 #include <iostream>
 #include <initializer_list>
+#include "Operation.h"
+#include "Type.h"
 
+using namespace std;
 class IRInstr;
 
 class BasicBlock

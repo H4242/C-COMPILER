@@ -26,26 +26,33 @@ public:
 
     // symbol table methods
     void add_to_symbol_table(string name, Type t);
+    void set_var_used(string name);
+    bool is_var_used(string name);
     string create_new_tempvar(Type t);
     int get_var_index(string name);
     Type get_var_type(string name);
+    boolean is_in_symbol_table(string name);
 
-    // basic block management
     string new_BB_name();
-    BasicBlock *current_bb;
+
+    void add_to_current_bb(IRInstr *instr);
 
     // getters
     string get_name() { return name; }
 
 protected:
-    map<string, Type> SymbolType; /**< part of the symbol table  */
-    map<string, int> SymbolIndex; /**< part of the symbol table  */
-    int currentOffset = 0;        /**< to allocate new symbols in the symbol table */
-    int nextBBnumber = 0;         /**< just for naming */
+    map<string, Type> SymbolTableType; /**< part of the symbol table  */
+    map<string, int> SymbolTableIndex; /**< part of the symbol table  */
+    map<string, bool> SymbolTableUsed; /**< part of the symbol table  */
+    int currentOffset = 0;             /**< to allocate new symbols in the symbol table */
+    int nextBBnumber = 0;              /**< just for naming */
 
     vector<BasicBlock *> bbs; /**< all the basic blocks of this CFG*/
 
     string name; /**< name of the function */
+
+    // basic block management
+    BasicBlock *current_bb;
 };
 
 #endif

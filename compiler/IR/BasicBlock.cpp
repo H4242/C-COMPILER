@@ -1,7 +1,5 @@
 #include "BasicBlock.h"
 
-using namespace std;
-
 BasicBlock::BasicBlock(string entry_label) : label(entry_label) {}
 
 void BasicBlock::add_IRInstr(Operation op, Type t, vector<string> params)

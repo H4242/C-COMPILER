@@ -3,7 +3,7 @@
 CFG::CFG(string name_)
 {
     name = name_;
-    add_bb(new BasicBlock(this, new_BB_name()));
+    add_bb(new BasicBlock(new_BB_name()));
 }
 
 void CFG::add_bb(BasicBlock *bb)
@@ -18,8 +18,9 @@ void CFG::add_to_symbol_table(string name, Type t)
         currentOffset -= 4;
     else if (t == CHAR)
         currentOffset -= 1;
-    symbolTable[name] = currentOffset;
-    symbolType[name] = t;
+    symbolTableIndex[name] = currentOffset;
+    symbolTableType[name] = t;
+    SymbolTableUsed[name] = false;
 }
 
 string CFG::create_new_tempvar(Type t)
@@ -31,15 +32,37 @@ string CFG::create_new_tempvar(Type t)
 
 int CFG::get_var_index(string name)
 {
-    return symbolIndex[name];
+    return symbolTableIndex[name];
 }
 
 Type CFG::get_var_type(string name)
 {
-    return symbolType[name];
+    return symbolTableType[name];
 }
 
 string CFG::new_BB_name()
 {
-    return "bb" + to_string(nextBBnumber++);
+    string new_name = "bb_" + to_string(nextBBnumber);
+    nextBBnumber += 1;
+    return new_name;
+}
+
+bool CFG::is_in_symbol_table(string name)
+{
+    return symbolTableIndex.find(name) != symbolTableIndex.end();
+}
+
+void CFG::set_var_used(string name)
+{
+    symbolTableUsed[name] = true;
+}
+
+bool CFG::is_var_used(string name)
+{
+    return symbolTableUsed[name];
+}
+
+void CFG::add_to_current_bb(IRInstr *instr)
+{
+    current_bb->add_IRInstr(instr);
 }
