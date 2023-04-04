@@ -180,7 +180,7 @@ for jobname in jobs:
             dumpfile("gcc-execute.txt")
             
     ## IFCC compiler
-    ifccstatus=command(wrapper+" asm-ifcc.s input.c", "ifcc-compile.txt")
+    ifccstatus=command("/bin/sh "+ wrapper+" asm-ifcc.s input.c", "ifcc-compile.txt")    
     
     if gccstatus != 0 and ifccstatus != 0:
         ## ifcc correctly rejects invalid program -> test-case ok
