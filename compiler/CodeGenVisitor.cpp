@@ -161,7 +161,10 @@ antlrcpp::Any CodeGenVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 	}
 	else
 	{
-		cout << "\tnotl\t%eax\n";
+		cout << "\tcmp\t$0," << symbolTable[expr] << "(%rbp)\n"
+			 << "\tsetne\t%al\n"
+			 << "\txorb\t$1, %al\n"
+			 << "\tmovzbl\t%al, %eax\n";
 	}
 
 	cout << "\tmovl\t%eax, " << symbolTable[name] << "(%rbp)\n";

@@ -12,11 +12,11 @@ declaration: 'int' VAR (',' VAR)* ('=' expr)? ';';
 assignment: VAR '=' expr ';';
 
 expr:
-	expr op=('*' | '/') expr					# muldiv
+	op=('-' | '!') expr							# unaryexpr
+	|expr op=('*' | '/') expr					# muldiv
 	| expr op=('+' | '-') expr					# addsub
-	| expr op=('&' | '|' | '^') expr			# bitexpr
 	| expr op=('<' | '>' | '==' | '!=') expr	# compexpr
-	| op=('-' | '!') expr						# unaryexpr
+	| expr op=('&' | '|' | '^') expr			# bitexpr
 	| CONST										# constexpr
 	| VAR										# varexpr
 	| '(' expr ')'								# parexpr;
