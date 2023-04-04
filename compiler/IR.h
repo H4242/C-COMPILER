@@ -7,7 +7,7 @@
 #include <initializer_list>
 
 // Declarations from the parser -- replace with your own
-#include "type.h"
+#include "Type.h"
 #include "symbole.h"
 
 class BasicBlock;
