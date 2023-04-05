@@ -41,7 +41,22 @@ public:
 
 protected:
 };
+class Div : public Operation
+{
+public:
+    Div() : Operation() {}
+    void genIR(vector<string> params);
 
+protected:
+};
+class Mod : public Operation
+{
+public:
+    Mod() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
 class Ldconst : public Operation
 {
 public:
@@ -109,6 +124,78 @@ class Cmp_le : public Operation
 {
 public:
     Cmp_le() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Cmp_ge : public Operation
+{
+public:
+    Cmp_ge() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Cmp_gt : public Operation
+{
+public:
+    Cmp_gt() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Unary_negate : public Operation
+{
+public:
+    Unary_negate() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Unary_different : public Operation
+{
+public:
+    Unary_different() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Bite_and : public Operation
+{
+public:
+    Bite_and() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Bite_or : public Operation
+{
+public:
+    Bite_or() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Bite_xor : public Operation
+{
+public:
+    Bite_xor() : Operation() {}
+    void genIR(vector<string> params);
+
+protected:
+};
+
+class Return_ : public Operation
+{
+public:
+    Return_() : Operation() {}
     void genIR(vector<string> params);
 
 protected:

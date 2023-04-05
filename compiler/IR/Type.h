@@ -1,6 +1,8 @@
 #ifndef TYPE_H
 #define TYPE_H
 
+#include <map>
+using namespace std;
 typedef enum
 {
     INT,
@@ -10,14 +12,16 @@ typedef enum
 class Type
 {
 private:
-    map<string, typeEnum> typeMap = {{"int", INT}, {"char", CHAR}};
+    typeEnum type;
+    map<string, typeEnum> typeMap = {{"int", INT}, {"char", CHAR}, {"i", INT}, {"c", CHAR}};
 
 public:
+    Type() {}
     Type(string name)
     {
         type = typeMap[name];
     }
-    Type getType()
+    typeEnum getType()
     {
         return type;
     }

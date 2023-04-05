@@ -7,7 +7,7 @@ prog:
 
 returnstmt: 'return' expr ';';
 
-declaration: type=('int'|'char') VAR (',' VAR)* ('=' expr)? ';';
+declaration: ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';';
 
 assignment: VAR '=' expr ';';
 

@@ -14,13 +14,13 @@ void CFG::add_bb(BasicBlock *bb)
 
 void CFG::add_to_symbol_table(string name, Type t)
 {
-    if (t == INT)
+    if (t.getType() == INT)
         currentOffset -= 4;
-    else if (t == CHAR)
+    else if (t.getType() == CHAR)
         currentOffset -= 1;
     symbolTableIndex[name] = currentOffset;
     symbolTableType[name] = t;
-    SymbolTableUsed[name] = false;
+    symbolTableUsed[name] = false;
 }
 
 string CFG::create_new_tempvar(Type t)
@@ -62,7 +62,17 @@ bool CFG::is_var_used(string name)
     return symbolTableUsed[name];
 }
 
-void CFG::add_to_current_bb(IRInstr *instr)
+void CFG::add_to_current_bb(Operation op, Type t, vector<string> params)
 {
-    current_bb->add_IRInstr(instr);
+    current_bb->add_IRInstr(op, t, params);
+}
+
+void CFG::add_to_const_symbol(string name, int val)
+{
+    symbolTableConst[name] = val;
+}
+
+map<string, bool> CFG::get_symbol_table_used()
+{
+    return symbolTableUsed;
 }

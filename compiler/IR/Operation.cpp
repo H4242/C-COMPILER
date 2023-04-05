@@ -34,6 +34,16 @@ void Mul::genIR(vector<string> params)
     Operation::genIR(params);
     instrIR = "mul\t" + instrIR;
 }
+void Div::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "div\t" + instrIR;
+}
+void Mod::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "mod\t" + instrIR;
+}
 void Copy::genIR(vector<string> params)
 {
     Operation::genIR(params);
@@ -73,4 +83,49 @@ void Cmp_le::genIR(vector<string> params)
 {
     Operation::genIR(params);
     instrIR = "cmp_le\t" + instrIR;
+}
+
+void Cmp_ge::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "cmp_ge\t" + instrIR;
+}
+void Cmp_gt::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "cmp_gt\t" + instrIR;
+}
+
+void Unary_negate::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "unary_negate\t" + instrIR;
+}
+
+void Unary_different::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "unary_different\t" + instrIR;
+}
+
+void Bite_and::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "bite_and\t" + instrIR;
+}
+
+void Bite_or::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "bite_or\t" + instrIR;
+}
+void Bite_xor::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "bite_xor\t" + instrIR;
+}
+void Return_::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "return_\t" + instrIR;
 }

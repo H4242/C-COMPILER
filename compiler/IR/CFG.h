@@ -11,11 +11,13 @@
 #define CFG_H
 
 #include <vector>
+#include <map>
 #include <string>
 #include <iostream>
 #include <initializer_list>
-
+#include "Type.h"
 #include "BasicBlock.h"
+using namespace std;
 
 class CFG
 {
@@ -31,19 +33,20 @@ public:
     string create_new_tempvar(Type t);
     int get_var_index(string name);
     Type get_var_type(string name);
-    boolean is_in_symbol_table(string name);
-
+    bool is_in_symbol_table(string name);
+    void add_to_const_symbol(string name, int val);
     string new_BB_name();
-
-    void add_to_current_bb(IRInstr *instr);
+    map<string, bool> get_symbol_table_used();
+    void add_to_current_bb(Operation op, Type t, vector<string> params);
 
     // getters
     string get_name() { return name; }
 
 protected:
-    map<string, Type> SymbolTableType; /**< part of the symbol table  */
-    map<string, int> SymbolTableIndex; /**< part of the symbol table  */
-    map<string, bool> SymbolTableUsed; /**< part of the symbol table  */
+    map<string, Type> symbolTableType; /**< part of the symbol table  */
+    map<string, int> symbolTableIndex; /**< part of the symbol table  */
+    map<string, bool> symbolTableUsed; /**< part of the symbol table  */
+    map<string, int> symbolTableConst; /**< part of the symbol table  */
     int currentOffset = 0;             /**< to allocate new symbols in the symbol table */
     int nextBBnumber = 0;              /**< just for naming */
 
