@@ -48,3 +48,8 @@ void BasicBlock::set_test_var_name(string name) { test_var_name = name; }
 string BasicBlock::get_test_var_name() { return test_var_name; }
 
 string BasicBlock::get_label() { return label; }
+
+vector<IRInstr *> BasicBlock::get_instrs()
+{
+    return instrs;
+}

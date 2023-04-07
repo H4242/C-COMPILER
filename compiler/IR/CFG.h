@@ -41,9 +41,13 @@ public:
     map<string, Type> get_symbol_table_type();
     map<string, int> get_symbol_table_index();
     void add_to_current_bb(Operation op, Type t, vector<string> params);
-
+    vector<BasicBlock *> get_bbs();
     // getters
-    string get_name() { return name; }
+    string
+    get_name()
+    {
+        return name;
+    }
 
 protected:
     map<string, Type> symbolTableType; /**< part of the symbol table  */

@@ -28,6 +28,7 @@ public:
 	virtual antlrcpp::Any visitUnaryexpr(ifccParser::UnaryexprContext *ctx) override;
 	virtual antlrcpp::Any visitBitexpr(ifccParser::BitexprContext *ctx) override;
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
+	CFG *getCFG();
 
 protected:
 	CFG *cfg;

@@ -89,3 +89,8 @@ map<string, int> CFG::get_symbol_table_const()
 {
     return symbolTableConst;
 }
+
+vector<BasicBlock *> CFG::get_bbs()
+{
+    return bbs;
+}

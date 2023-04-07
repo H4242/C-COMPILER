@@ -24,6 +24,7 @@ public:
   void set_test_var_name(string name);
   string get_test_var_name();
   string get_label();
+  vector<IRInstr *> get_instrs();
 
 protected:
   BasicBlock *exit_true;    /**< pointer to the next basic block, true branch. If nullptr, return from procedure */

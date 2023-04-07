@@ -1,6 +1,7 @@
 #include "ASTVisitor.h"
 #include "IR/Type.h"
 #include <any>
+#include "IR/CFG.h"
 
 using namespace std;
 
@@ -59,7 +60,6 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 		{
 			operation = Copy();
 		}
-
 		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var, rightExpr});
 	}
 
@@ -74,7 +74,6 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 	}
 
 	string var = ctx->VAR()->getText();
-
 	string rightExpr = visit(ctx->expr()).as<string>();
 	Operation operation;
 	if (ifccParser::ConstexprContext *v = dynamic_cast<ifccParser::ConstexprContext *>(ctx->expr()))
@@ -252,4 +251,9 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	cfg->add_to_current_bb(operation, type, {name, left, right});
 
 	return name;
+}
+
+CFG *ASTVisitor::getCFG()
+{
+	return cfg;
 }
