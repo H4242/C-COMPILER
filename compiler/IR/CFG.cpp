@@ -14,18 +14,16 @@ void CFG::add_bb(BasicBlock *bb)
 
 void CFG::add_to_symbol_table(string name, Type t)
 {
-    if (t.getType() == INT)
-        currentOffset -= 4;
-    else if (t.getType() == CHAR)
-        currentOffset -= 1;
-    symbolTableIndex[name] = currentOffset;
+    symbolTableIndex[name] = nextFreeSymbolIndex;
+    ++nextFreeSymbolIndex;
     symbolTableType[name] = t;
-    symbolTableUsed[name] = false;
+    if (name[0] != '!')
+        symbolTableUsed[name] = false;
 }
 
 string CFG::create_new_tempvar(Type t)
 {
-    string name = "!tmp" + currentOffset;
+    string name = "!tmp" + to_string(nextFreeSymbolIndex);
     add_to_symbol_table(name, t);
     return name;
 }
@@ -75,4 +73,19 @@ void CFG::add_to_const_symbol(string name, int val)
 map<string, bool> CFG::get_symbol_table_used()
 {
     return symbolTableUsed;
+}
+
+map<string, int> CFG::get_symbol_table_index()
+{
+    return symbolTableIndex;
+}
+
+map<string, Type> CFG::get_symbol_table_type()
+{
+    return symbolTableType;
+}
+
+map<string, int> CFG::get_symbol_table_const()
+{
+    return symbolTableConst;
 }

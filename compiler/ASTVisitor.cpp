@@ -1,5 +1,5 @@
 #include "ASTVisitor.h"
-#include <typeinfo>
+#include "IR/Type.h"
 #include <any>
 
 using namespace std;
@@ -24,8 +24,8 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
-	Type type = Type(typeid(ctx->expr()).name());
 	string name = visit(ctx->expr()).as<string>();
+	Type type = cfg->get_var_type(name);
 	Operation operation = Return_();
 	cfg->add_to_current_bb(operation, type, {name});
 	return 0; // Dummy return
@@ -34,7 +34,7 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 {
 	int size = ctx->VAR().size();
-	Type type = Type(typeid(ctx->VAR(0)).name());
+	Type type = Type(ctx->type->getText());
 
 	for (int i = 0; i < size; i++)
 	{
@@ -92,7 +92,7 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 {
-	Type type = Type(typeid(ctx->CONST()).name());
+	Type type = Type("int");
 	string name = cfg->create_new_tempvar(type);
 	cfg->add_to_const_symbol(name, stoi(ctx->CONST()->getText()));
 	return name;
@@ -114,11 +114,13 @@ antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
-	Type type = Type(typeid(ctx->expr(0)).name());
+	// We assume that both expressions are of the same type
+	Type type = cfg->get_var_type(left);
+
 	string name = cfg->create_new_tempvar(type);
-	cfg->add_to_symbol_table(name, type);
+
 	Operation operation;
-	string OP = ctx->OPA()->getText();
+	string OP = ctx->op->getText();
 	if (OP == "+")
 	{
 		operation = Add();
@@ -136,11 +138,12 @@ antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
-	Type type = Type(typeid(ctx->expr(0)).name());
+	Type type = cfg->get_var_type(left);
+
 	string name = cfg->create_new_tempvar(type);
-	cfg->add_to_symbol_table(name, type);
+
 	Operation operation;
-	string OP = ctx->OPM()->getText();
+	string OP = ctx->op->getText();
 	if (OP == "*")
 	{
 		operation = Mul();
@@ -165,14 +168,14 @@ antlrcpp::Any ASTVisitor::visitParexpr(ifccParser::ParexprContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 {
-	Type type = Type(typeid(ctx->expr()).name());
-	string name = cfg->create_new_tempvar(type);
-	cfg->add_to_symbol_table(name, type);
 
 	Operation operation;
 	string expr = visit(ctx->expr()).as<string>();
 
-	string OP = ctx->OPU()->getText();
+	Type type = cfg->get_var_type(expr);
+	string name = cfg->create_new_tempvar(type);
+
+	string OP = ctx->op->getText();
 	if (OP == "-")
 	{
 		operation = Unary_negate();
@@ -191,13 +194,12 @@ antlrcpp::Any ASTVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
-	Type type = Type(typeid(ctx->expr()).name());
+	Type type = cfg->get_var_type(left);
 	string name = cfg->create_new_tempvar(type);
-	cfg->add_to_symbol_table(name, type);
 
 	Operation operation;
 
-	string OP = ctx->OPB()->getText();
+	string OP = ctx->op->getText();
 	if (OP == "&")
 	{
 		operation = Bite_and();
@@ -221,13 +223,12 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
-	Type type = Type(typeid(ctx->expr(0)).name());
+	Type type = cfg->get_var_type(left);
 	string name = cfg->create_new_tempvar(type);
-	cfg->add_to_symbol_table(name, type);
 
 	Operation operation;
 
-	string OP = ctx->OPC()->getText();
+	string OP = ctx->op->getText();
 	if (OP == ">")
 	{
 		operation = Cmp_gt(); // %al is 0 or 1 (8 bits)

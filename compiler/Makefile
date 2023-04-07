@@ -23,7 +23,13 @@ ifcc: $(OBJECTS)
 
 ##########################################
 # compile our hand-writen C++ code: main(), CodeGenVisitor, etc.
-build/%.o: %.cpp IR/%.cpp generated/ifccParser.cpp
+build/%.o: %.cpp generated/ifccParser.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $< 
+
+##########################################
+# compile all the IR C++ files
+build/%.o: IR/%.cpp
 	@mkdir -p build
 	$(CC) $(CCFLAGS) -MMD -o $@ $< 
 

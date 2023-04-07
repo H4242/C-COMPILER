@@ -37,6 +37,9 @@ public:
     void add_to_const_symbol(string name, int val);
     string new_BB_name();
     map<string, bool> get_symbol_table_used();
+    map<string, int> get_symbol_table_const();
+    map<string, Type> get_symbol_table_type();
+    map<string, int> get_symbol_table_index();
     void add_to_current_bb(Operation op, Type t, vector<string> params);
 
     // getters
@@ -47,7 +50,7 @@ protected:
     map<string, int> symbolTableIndex; /**< part of the symbol table  */
     map<string, bool> symbolTableUsed; /**< part of the symbol table  */
     map<string, int> symbolTableConst; /**< part of the symbol table  */
-    int currentOffset = 0;             /**< to allocate new symbols in the symbol table */
+    int nextFreeSymbolIndex = 0;       /**< to allocate new symbols in the symbol table */
     int nextBBnumber = 0;              /**< just for naming */
 
     vector<BasicBlock *> bbs; /**< all the basic blocks of this CFG*/

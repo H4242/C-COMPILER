@@ -1,5 +1,4 @@
-#ifndef IRINSTR_H
-#define IRINSTR_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -27,4 +26,3 @@ private:
     vector<string> params; /**< For 3-op instrs: d, x, y; for ldconst: d, c;  For call: label, d, params;  for wmem and rmem: choose yourself */
                            // if you subclass IRInstr, each IRInstr subclass has its parameters and the previous (very important) comment becomes useless: it would be a better design.
 };
-#endif
