@@ -6,7 +6,7 @@ set -e # Abort the script at the first error
 # Preparation step
 
 # sanity check
-if [ $(basename $PWD) != "pld-comp" ]
+if [ $(basename $PWD) != "C-COMPILER" ]
 then
     echo "error: this script must be executed from within your 'pld-comp' directory"
     exit 1

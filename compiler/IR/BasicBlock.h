@@ -15,7 +15,7 @@ class BasicBlock
 {
 public:
   BasicBlock(string entry_label);
-  void add_IRInstr(Operation op, Type t, vector<string> params);
+  void add_IRInstr(Operation *op, Type t, vector<string> params);
   void gen_IR(ostream &o); /**< x86 assembly code generation for this basic block (very simple) */
   void set_exit_true(BasicBlock *bb);
   BasicBlock *get_exit_true();

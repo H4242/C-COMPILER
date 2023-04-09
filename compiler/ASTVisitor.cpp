@@ -27,8 +27,9 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
 	string name = visit(ctx->expr()).as<string>();
 	Type type = cfg->get_var_type(name);
-	Operation operation = Return_();
-	cfg->add_to_current_bb(operation, type, {name});
+	Operation *operation = new Return_();
+	string name_index = to_string(cfg->get_symbol_table_index()[name]);
+	cfg->add_to_current_bb(operation, type, {name_index});
 	return 0; // Dummy return
 }
 
@@ -48,19 +49,23 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 	if (ctx->expr())
 	{
 		string var = ctx->VAR(size - 1)->getText();
+		string var_index = to_string(cfg->get_symbol_table_index()[var]);
 
 		string rightExpr = visit(ctx->expr()).as<string>();
 
-		Operation operation;
+		Operation *operation;
 		if (ifccParser::ConstexprContext *v = dynamic_cast<ifccParser::ConstexprContext *>(ctx->expr()))
 		{
-			operation = Ldconst();
+			operation = new Ldconst();
+			string rightExpr_value = to_string(cfg->get_symbol_table_const()[rightExpr]);
+			cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_value});
 		}
 		else
 		{
-			operation = Copy();
+			operation = new Copy();
+			string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
+			cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
 		}
-		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var, rightExpr});
 	}
 
 	return 0;
@@ -75,17 +80,21 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 
 	string var = ctx->VAR()->getText();
 	string rightExpr = visit(ctx->expr()).as<string>();
-	Operation operation;
+	Operation *operation;
 	if (ifccParser::ConstexprContext *v = dynamic_cast<ifccParser::ConstexprContext *>(ctx->expr()))
 	{
-		operation = Ldconst();
+		operation = new Ldconst();
 	}
 	else
 	{
-		operation = Copy();
+		operation = new Copy();
 	}
 
-	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var, rightExpr});
+	string var_index = to_string(cfg->get_symbol_table_index()[var]);
+	string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
+
+	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
+
 	return 0;
 }
 
@@ -118,17 +127,21 @@ antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 
 	string name = cfg->create_new_tempvar(type);
 
-	Operation operation;
+	Operation *operation;
 	string OP = ctx->op->getText();
 	if (OP == "+")
 	{
-		operation = Add();
+		operation = new Add();
 	}
 	else
 	{
-		operation = Sub();
+		operation = new Sub();
 	}
-	cfg->add_to_current_bb(operation, type, {name, left, right});
+	string name_index = to_string(cfg->get_symbol_table_index()[name]);
+	string left_index = to_string(cfg->get_symbol_table_index()[left]);
+	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+
+	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 	return name;
 }
 
@@ -141,21 +154,26 @@ antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 
 	string name = cfg->create_new_tempvar(type);
 
-	Operation operation;
+	Operation *operation;
 	string OP = ctx->op->getText();
 	if (OP == "*")
 	{
-		operation = Mul();
+		operation = new Mul();
 	}
 	else if (OP == "/")
 	{
-		operation = Div();
+		operation = new Div();
 	}
 	else
 	{
-		operation = Mod();
+		operation = new Mod();
 	}
-	cfg->add_to_current_bb(operation, type, {name, left, right});
+
+	string name_index = to_string(cfg->get_symbol_table_index()[name]);
+	string left_index = to_string(cfg->get_symbol_table_index()[left]);
+	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+
+	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
 }
@@ -168,7 +186,7 @@ antlrcpp::Any ASTVisitor::visitParexpr(ifccParser::ParexprContext *ctx)
 antlrcpp::Any ASTVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 {
 
-	Operation operation;
+	Operation *operation;
 	string expr = visit(ctx->expr()).as<string>();
 
 	Type type = cfg->get_var_type(expr);
@@ -177,14 +195,16 @@ antlrcpp::Any ASTVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 	string OP = ctx->op->getText();
 	if (OP == "-")
 	{
-		operation = Unary_negate();
+		operation = new Unary_negate();
 	}
 	else
 	{
-		operation = Unary_different();
+		operation = new Unary_different();
 	}
-	cfg->add_to_current_bb(operation, type, {name, expr});
+	string name_index = to_string(cfg->get_symbol_table_index()[name]);
+	string expr_index = to_string(cfg->get_symbol_table_index()[expr]);
 
+	cfg->add_to_current_bb(operation, type, {name_index, expr_index});
 	return name;
 }
 
@@ -196,23 +216,27 @@ antlrcpp::Any ASTVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 	Type type = cfg->get_var_type(left);
 	string name = cfg->create_new_tempvar(type);
 
-	Operation operation;
+	Operation *operation;
 
 	string OP = ctx->op->getText();
 	if (OP == "&")
 	{
-		operation = Bite_and();
+		operation = new Bite_and();
 	}
 	else if (OP == "|")
 	{
-		operation = Bite_or();
+		operation = new Bite_or();
 	}
 	else
 	{
-		operation = Bite_xor();
+		operation = new Bite_xor();
 	}
 
-	cfg->add_to_current_bb(operation, type, {name, left, right});
+	string name_index = to_string(cfg->get_symbol_table_index()[name]);
+	string left_index = to_string(cfg->get_symbol_table_index()[left]);
+	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+
+	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
 }
@@ -225,30 +249,35 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	Type type = cfg->get_var_type(left);
 	string name = cfg->create_new_tempvar(type);
 
-	Operation operation;
+	Operation *operation;
 
 	string OP = ctx->op->getText();
 	if (OP == ">")
 	{
-		operation = Cmp_gt(); // %al is 0 or 1 (8 bits)
+		operation = new Cmp_gt(); // %al is 0 or 1 (8 bits)
 	}
 	else if (OP == "<")
 	{
-		operation = Cmp_lt(); // %al is 0 or 1 (8 bits)
+		operation = new Cmp_lt(); // %al is 0 or 1 (8 bits)
 	}
 	else if (OP == "==")
 	{
-		operation = Cmp_eq(); // %al is 0 or 1 (8 bits)
+		operation = new Cmp_eq(); // %al is 0 or 1 (8 bits)
 	}
 	else if (OP == ">=")
 	{
-		operation = Cmp_ge(); // %al is 0 or 1 (8 bits)
+		operation = new Cmp_ge(); // %al is 0 or 1 (8 bits)
 	}
 	else if (OP == "<=")
 	{
-		operation = Cmp_le(); // %al is 0 or 1 (8 bits)
+		operation = new Cmp_le(); // %al is 0 or 1 (8 bits)
 	}
-	cfg->add_to_current_bb(operation, type, {name, left, right});
+
+	string name_index = to_string(cfg->get_symbol_table_index()[name]);
+	string left_index = to_string(cfg->get_symbol_table_index()[left]);
+	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+
+	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
 }

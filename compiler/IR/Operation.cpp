@@ -173,14 +173,14 @@ void Div::gen_x86(vector<string> params, ostream &o)
 
 void Ldconst::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t$" << params[0] << ", " << params[1] << "(%rbp)" << endl;
+    o << "\tmovl\t$" << params[1] << ", " << params[0] << "(%rbp)" << endl;
 }
 
 void Copy::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[0] << "(%rbp)"
+    o << "\tmovl\t" << params[1] << "(%rbp)"
       << ", %eax\n"
-      << "\tmovl\t %eax, " << params[1] << "(%rbp)" << endl;
+      << "\tmovl\t %eax, " << params[0] << "(%rbp)" << endl;
 }
 
 void Rmem::gen_x86(vector<string> params, ostream &o)
@@ -279,19 +279,4 @@ void Bite_and::gen_x86(vector<string> params, ostream &o)
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\torl\t" << params[2] << "(%rbp), %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
-}
-
-void Prologue::gen_x86(vector<string> params, ostream &o)
-{
-    o << "\t.globl " << params[0] << endl; // cfg->get_name()
-    // o << "\t.type " << cfg->get_name() << ", @function" << endl;
-    o << params[0] << ":\n"
-      << "\tpushq\t%rbp\n"
-         "\tmovq\t%rsp, %rbp\n";
-}
-
-void Epilogue::gen_x86(ostream &o)
-{
-    o << "\tpopq\t%rbp\n"
-      << "\tret";
 }

@@ -9,7 +9,7 @@ class Operation
 public:
     Operation() {}
     virtual void genIR(vector<string> params);
-    virtual void gen_x86(vector<string> params, ostream &o) {};
+    virtual void gen_x86(vector<string> params, ostream &o){};
     string getInstrIR();
     virtual ~Operation() {}
 
@@ -22,7 +22,7 @@ class Add : public Operation
 public:
     Add() : Operation() {}
     void genIR(vector<string> params);
-    virtual void gen_x86(vector<string> params, ostream &o);
+    virtual void gen_x86(vector<string> params, ostream &o) override;
 
     virtual ~Add() {}
 
@@ -143,26 +143,6 @@ public:
     Cmp_le() : Operation() {}
     void genIR(vector<string> params);
     void gen_x86(vector<string> params, ostream &o);
-
-protected:
-};
-
-class Prologue : public Operation
-{
-public:
-    Prologue() : Operation() {}
-    void genIR(vector<string> params);
-    void gen_x86(vector<string> params, ostream &o);
-
-protected:
-};
-
-class Epilogue : public Operation
-{
-public:
-    Epilogue() : Operation() {}
-    void genIR(vector<string> params);
-    void gen_x86(ostream &o);
 
 protected:
 };

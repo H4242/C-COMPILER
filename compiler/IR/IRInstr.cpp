@@ -1,6 +1,6 @@
 #include "IRInstr.h"
 using namespace std;
-IRInstr::IRInstr(Operation &op, Type t, vector<string> params)
+IRInstr::IRInstr(Operation *op, Type t, vector<string> params)
 {
     this->op = op;
     this->t = t;
@@ -9,6 +9,16 @@ IRInstr::IRInstr(Operation &op, Type t, vector<string> params)
 
 void IRInstr::gen_IR(ostream &o)
 {
-    this->op.genIR(this->params);
-    o << this->op.getInstrIR();
+    this->op->genIR(this->params);
+    o << this->op->getInstrIR();
+}
+
+Operation *IRInstr::getOp()
+{
+    return op;
+}
+
+vector<string> IRInstr::getParams()
+{
+    return params;
 }

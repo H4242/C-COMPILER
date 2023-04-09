@@ -14,8 +14,15 @@ void CFG::add_bb(BasicBlock *bb)
 
 void CFG::add_to_symbol_table(string name, Type t)
 {
+    if (t.getType() == INT)
+    {
+        nextFreeSymbolIndex -= 4;
+    }
+    if (t.getType() == CHAR)
+    {
+        nextFreeSymbolIndex -= 1;
+    }
     symbolTableIndex[name] = nextFreeSymbolIndex;
-    ++nextFreeSymbolIndex;
     symbolTableType[name] = t;
     if (name[0] != '!')
         symbolTableUsed[name] = false;
@@ -60,7 +67,7 @@ bool CFG::is_var_used(string name)
     return symbolTableUsed[name];
 }
 
-void CFG::add_to_current_bb(Operation op, Type t, vector<string> params)
+void CFG::add_to_current_bb(Operation *op, Type t, vector<string> params)
 {
     current_bb->add_IRInstr(op, t, params);
 }
@@ -93,4 +100,9 @@ map<string, int> CFG::get_symbol_table_const()
 vector<BasicBlock *> CFG::get_bbs()
 {
     return bbs;
+}
+
+BasicBlock *CFG::get_current_bb()
+{
+    return current_bb;
 }
