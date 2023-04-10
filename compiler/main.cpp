@@ -10,6 +10,8 @@
 #include "asm_generator/Gen_x86.h"
 
 #include "ASTVisitor.h"
+#include "DeclarationVisitor.h"
+
 using namespace antlr4;
 using namespace std;
 
@@ -50,6 +52,9 @@ int main(int argn, const char **argv)
   */
 
   // create symbolTable for the scope
+
+  DeclarationVisitor d;
+  d.visit(tree);
 
   ASTVisitor v;
   v.visit(tree);

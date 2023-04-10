@@ -1,0 +1,33 @@
+name: Tests
+on:
+  push:
+  pull_request:
+    types: [opened, reopened]
+  
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: sudo apt install antlr4 libantlr4-runtime-dev default-jdk
+
+    - name: Build compiler
+      working-directory: ./compiler/
+      run: make
+      shell: bash
+
+    - name: Run tests
+      working-directory: ./tests/
+      run: python3 ifcc-test.py testfiles
+      shell: bash
+
+    - name: Check exit code
+      run: |
+        if [ "$?" -ne 0 ]; then
+          echo "Tests failed!"
+          exit 1
+        fi

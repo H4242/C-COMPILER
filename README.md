@@ -24,3 +24,7 @@ Team Members :
 - Saad GUESSOUS
 - Imadath YAYA
 - Yasssine KHALAKHIL
+
+# Run the project 
+
+You need to do `make` in `compiler` repository. This will generate the executable ifcc, you can then use ifcc with your c code as the following : ./ifcc mycode.c, this will generate the assembly for your code. 
