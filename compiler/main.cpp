@@ -7,9 +7,11 @@
 #include "generated/ifccLexer.h"
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
+#include "asm_generator/Gen_x86.h"
 
-#include "CodeGenVisitor.h"
+#include "ASTVisitor.h"
 #include "DeclarationVisitor.h"
+
 using namespace antlr4;
 using namespace std;
 
@@ -54,8 +56,12 @@ int main(int argn, const char **argv)
   DeclarationVisitor d;
   d.visit(tree);
 
-  CodeGenVisitor v;
+  ASTVisitor v;
   v.visit(tree);
+
+  CodeGen *codegen = new Gen_x86(v.getCFG());
+
+  codegen->gen_asm(std::cout);
 
   return 0;
 }
