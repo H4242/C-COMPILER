@@ -28,15 +28,12 @@ public:
 
     // symbol table methods
     void add_to_symbol_table(string name, Type t);
-    void set_var_used(string name);
-    bool is_var_used(string name);
     string create_new_tempvar(Type t);
     int get_var_index(string name);
     Type get_var_type(string name);
     bool is_in_symbol_table(string name);
     void add_const_to_symbol_table(string name, int val);
     string new_BB_name();
-    map<string, bool> get_symbol_table_used();
     map<string, int> get_symbol_table_const();
     map<string, Type> get_symbol_table_type();
     map<string, int> get_symbol_table_index();
@@ -55,7 +52,6 @@ public:
 protected:
     map<string, Type> symbolTableType; /**< part of the symbol table  */
     map<string, int> symbolTableIndex; /**< part of the symbol table  */
-    map<string, bool> symbolTableUsed; /**< part of the symbol table  */
     map<string, int> symbolTableConst; /**< part of the symbol table  */
     int nextFreeSymbolIndex = 0;       /**< to allocate new symbols in the symbol table */
     int nextBBnumber = 0;              /**< just for naming */

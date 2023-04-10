@@ -12,14 +12,6 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 	visitChildren(ctx);
 
-	for (auto &var : cfg->get_symbol_table_used())
-	{
-		if (!var.second)
-		{
-			cerr << "warning: variable " << var.first << " declared but not used\n";
-		}
-	}
-
 	return 0;
 }
 
@@ -40,10 +32,6 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 
 	for (int i = 0; i < size; i++)
 	{
-		if (cfg->is_in_symbol_table(ctx->VAR(i)->getText()))
-		{
-			throw std::logic_error("error: variable declared twice");
-		}
 		cfg->add_to_symbol_table(ctx->VAR(i)->getText(), type);
 	}
 	if (ctx->expr())
@@ -63,11 +51,6 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	if (!cfg->is_in_symbol_table(ctx->VAR()->getText()))
-	{
-		throw std::logic_error("error: assignment of undeclared variable");
-	}
-
 	string var = ctx->VAR()->getText();
 	string var_index = to_string(cfg->get_symbol_table_index()[var]);
 
@@ -94,13 +77,7 @@ antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
-	string name = ctx->VAR()->getText();
-	if (!cfg->is_in_symbol_table(name))
-	{
-		throw logic_error("error: undeclared variable");
-	}
-	cfg->set_var_used(name);
-	return name;
+	return ctx->VAR()->getText();
 }
 
 antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)

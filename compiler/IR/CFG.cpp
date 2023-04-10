@@ -24,8 +24,6 @@ void CFG::add_to_symbol_table(string name, Type t)
     }
     symbolTableIndex[name] = nextFreeSymbolIndex;
     symbolTableType[name] = t;
-    if (name[0] != '!')
-        symbolTableUsed[name] = false;
 }
 
 string CFG::create_new_tempvar(Type t)
@@ -57,16 +55,6 @@ bool CFG::is_in_symbol_table(string name)
     return symbolTableIndex.find(name) != symbolTableIndex.end();
 }
 
-void CFG::set_var_used(string name)
-{
-    symbolTableUsed[name] = true;
-}
-
-bool CFG::is_var_used(string name)
-{
-    return symbolTableUsed[name];
-}
-
 void CFG::add_to_current_bb(Operation *op, Type t, vector<string> params)
 {
     current_bb->add_IRInstr(op, t, params);
@@ -75,11 +63,6 @@ void CFG::add_to_current_bb(Operation *op, Type t, vector<string> params)
 void CFG::add_const_to_symbol_table(string name, int val)
 {
     symbolTableConst[name] = val;
-}
-
-map<string, bool> CFG::get_symbol_table_used()
-{
-    return symbolTableUsed;
 }
 
 map<string, int> CFG::get_symbol_table_index()
