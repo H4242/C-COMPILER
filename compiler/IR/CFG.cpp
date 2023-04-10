@@ -72,7 +72,7 @@ void CFG::add_to_current_bb(Operation *op, Type t, vector<string> params)
     current_bb->add_IRInstr(op, t, params);
 }
 
-void CFG::add_to_const_symbol(string name, int val)
+void CFG::add_const_to_symbol_table(string name, int val)
 {
     symbolTableConst[name] = val;
 }

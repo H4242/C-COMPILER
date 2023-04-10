@@ -7,7 +7,6 @@
 #include "generated/ifccLexer.h"
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
-#include "asm_generator/CodeGen.h"
 #include "asm_generator/Gen_x86.h"
 
 #include "ASTVisitor.h"

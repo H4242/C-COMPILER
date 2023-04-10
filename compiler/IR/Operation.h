@@ -8,10 +8,10 @@ class Operation
 {
 public:
     Operation() {}
+    virtual ~Operation() {}
     virtual void genIR(vector<string> params);
     virtual void gen_x86(vector<string> params, ostream &o){};
     string getInstrIR();
-    virtual ~Operation() {}
 
 protected:
     string instrIR = "";
@@ -147,6 +147,16 @@ public:
 protected:
 };
 
+class Cmp_gt : public Operation
+{
+public:
+    Cmp_gt() : Operation() {}
+    void genIR(vector<string> params);
+    void gen_x86(vector<string> params, ostream &o);
+
+protected:
+};
+
 class Cmp_ge : public Operation
 {
 public:
@@ -157,14 +167,12 @@ public:
 protected:
 };
 
-class Cmp_gt : public Operation
+class Cmp_ne : public Operation
 {
 public:
-    Cmp_gt() : Operation() {}
-    void genIR(vector<string> params);
+    Cmp_ne() : Operation() {}
+    void genIR(vector<string> params) {}
     void gen_x86(vector<string> params, ostream &o);
-
-protected:
 };
 
 class Unary_negate : public Operation

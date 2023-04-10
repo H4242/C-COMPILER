@@ -34,7 +34,7 @@ public:
     int get_var_index(string name);
     Type get_var_type(string name);
     bool is_in_symbol_table(string name);
-    void add_to_const_symbol(string name, int val);
+    void add_const_to_symbol_table(string name, int val);
     string new_BB_name();
     map<string, bool> get_symbol_table_used();
     map<string, int> get_symbol_table_const();

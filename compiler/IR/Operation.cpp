@@ -141,6 +141,7 @@ void Return_::genIR(vector<string> params)
     Operation::genIR(params);
     instrIR = "cmp_le\t" + instrIR;
 }
+
 void Add::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %edx\n"
@@ -180,7 +181,7 @@ void Copy::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp)"
       << ", %eax\n"
-      << "\tmovl\t %eax, " << params[0] << "(%rbp)" << endl;
+      << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
 }
 
 void Rmem::gen_x86(vector<string> params, ostream &o)
@@ -196,6 +197,24 @@ void Wmem::gen_x86(vector<string> params, ostream &o)
 void Call::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tcall\t " << params[0] << endl;
+}
+
+void Cmp_gt::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
+      << "\tsetg\t%al\n"         // %al is 0 or 1 (8 bits)
+      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
+}
+
+void Cmp_ge::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
+      << "\tsetge\t%al\n"        // %al is 0 or 1 (8 bits)
+      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
 void Cmp_eq::gen_x86(vector<string> params, ostream &o)
@@ -225,23 +244,11 @@ void Cmp_le::gen_x86(vector<string> params, ostream &o)
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
-void Return_::gen_x86(vector<string> params, ostream &o)
-{
-}
-void Cmp_gt::gen_x86(vector<string> params, ostream &o)
+void Cmp_ne::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsetg\t%al\n"         // %al is 0 or 1 (8 bits)
-      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
-      << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
-}
-
-void Cmp_ge::gen_x86(vector<string> params, ostream &o)
-{
-    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
-      << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsetge\t%al\n"        // %al is 0 or 1 (8 bits)
+      << "\tsetne\t%al\n"        // %al is 0 or 1 (8 bits)
       << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
@@ -256,7 +263,10 @@ void Unary_negate::gen_x86(vector<string> params, ostream &o)
 void Unary_different::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
-      << "\tnotl\t%eax\n"
+      << "\tcmp\t$0," << params[1] << "(%rbp)\n"
+      << "\tsetne\t%al\n"
+      << "\txorb\t$1, %al\n"
+      << "\tmovzbl\t%al, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
@@ -270,13 +280,18 @@ void Bite_or::gen_x86(vector<string> params, ostream &o)
 void Bite_xor::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
-      << "\torl\t" << params[2] << "(%rbp), %eax\n"
+      << "\txorl\t" << params[2] << "(%rbp), %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
 void Bite_and::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
-      << "\torl\t" << params[2] << "(%rbp), %eax\n"
+      << "\tandl\t" << params[2] << "(%rbp), %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
+}
+
+void Return_::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[0] << "(%rbp), %eax\n";
 }
