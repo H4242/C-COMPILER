@@ -31,6 +31,9 @@ public:
 	// 4.7
 	CFG *getCFG();
 
+	// 4.11
+	virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
+
 protected:
 	CFG *cfg;
 };

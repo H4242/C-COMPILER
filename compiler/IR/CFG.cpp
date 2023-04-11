@@ -89,3 +89,8 @@ BasicBlock *CFG::get_current_bb()
 {
     return current_bb;
 }
+
+void CFG::set_current_bb(BasicBlock *bb)
+{
+    current_bb = bb;
+}

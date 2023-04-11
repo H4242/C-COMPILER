@@ -248,6 +248,39 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	return name;
 }
 
+antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+	BasicBlock *test_bb = cfg->get_current_bb();
+	BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
+	BasicBlock *then_last_bb = cfg->get_current_bb();
+	BasicBlock *else_bb = new BasicBlock(cfg->new_BB_name());
+	BasicBlock *else_last_bb = cfg->get_current_bb();
+
+	BasicBlock *endif_bb = new BasicBlock(cfg->new_BB_name());
+
+	string expr_condition = visit(ctx->condition_block()->expr()).as<string>();
+	// Write the condition in the test_bb
+
+	test_bb->set_exit_true(then_bb);
+	test_bb->set_exit_false(else_bb);
+
+	then_last_bb->set_exit_true(endif_bb);
+	else_last_bb->set_exit_true(endif_bb);
+
+	then_last_bb->set_exit_false(NULL);
+	else_last_bb->set_exit_false(NULL);
+
+	cfg->set_current_bb(endif_bb);
+
+	cfg->add_bb(then_bb);
+	cfg->add_bb(else_bb);
+	cfg->add_bb(endif_bb);
+
+	string result = visit(ctx->condition_block()->stat_block());
+	return result;
+	// TODO: check if the return is correct
+}
+
 CFG *ASTVisitor::getCFG()
 {
 	return cfg;
