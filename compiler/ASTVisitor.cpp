@@ -28,7 +28,7 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 {
 	int size = ctx->VAR().size();
-	Type type = Type(ctx->type->getText());
+	Type type = Type(ctx->type()->getText());
 
 	for (int i = 0; i < size; i++)
 	{

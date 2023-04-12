@@ -15,7 +15,7 @@ all: ifcc
 
 ##########################################
 # link together all pieces of our compiler 
-OBJECTS=build/main.o build/ASTVisitor.o build/DeclarationVisitor.o build/CFG.o build/CodeGen.o build/Gen_x86.o build/BasicBlock.o build/IRInstr.o build/Operation.o build/Type.o build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o build/ifccParser.o 
+OBJECTS=build/main.o build/ASTVisitor.o build/DeclarationVisitor.o build/Function.o build/CFG.o build/CodeGen.o build/Gen_x86.o build/BasicBlock.o build/IRInstr.o build/Operation.o build/Type.o build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o build/ifccParser.o 
 
 ifcc: $(OBJECTS)
 	@mkdir -p build
@@ -28,6 +28,12 @@ build/%.o: %.cpp generated/ifccParser.cpp
 	$(CC) $(CCFLAGS) -MMD -o $@ $< 
 
 ##########################################
+# compile all the antlr-generated C++
+build/%.o: generated/%.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $< 
+
+##########################################
 # compile all the asm_generator C++ files
 build/%.o: asm_generator/%.cpp
 	@mkdir -p build
@@ -36,12 +42,6 @@ build/%.o: asm_generator/%.cpp
 ##########################################
 # compile all the IR C++ files
 build/%.o: IR/%.cpp
-	@mkdir -p build
-	$(CC) $(CCFLAGS) -MMD -o $@ $< 
-
-##########################################
-# compile all the antlr-generated C++
-build/%.o: generated/%.cpp
 	@mkdir -p build
 	$(CC) $(CCFLAGS) -MMD -o $@ $< 
 

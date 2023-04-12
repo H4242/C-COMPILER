@@ -1,13 +1,25 @@
 grammar ifcc;
 
-axiom: prog;
+axiom: function* prog function*;
+
+block : '{' (assignment | declaration | callFunction)* returnstmt? '}';
+
+function : type VAR '(' params? ')' ';'	 		#functiondecl
+ 		| type VAR '(' params? ')' block 		#functiondef
+		;
+
+params : type VAR (',' type VAR)*;
+
+callFunction: VAR '(' args? ')' ';';
+
+args: expr (',' expr)*;
 
 prog:
-	'int' 'main' '(' ')' '{' (assignment | declaration)* returnstmt '}';
+	'int' 'main' '(' ')' block;
 
 returnstmt: 'return' expr ';';
 
-declaration: type=('int' | 'char') VAR (',' VAR)* ('=' expr)? ';';
+declaration: type VAR (',' VAR)* ('=' expr)? ';';
 
 assignment: VAR '=' expr ';';
 
@@ -20,6 +32,10 @@ expr:
 	| CONST										# constexpr
 	| VAR										# varexpr
 	| '(' expr ')'								# parexpr;
+
+type : 'int' # inttype
+	| 'char' # chartype
+	;
 
 CONST: [0-9]+;
 COMMENT: ('/*' .*? '*/'| '//' .*? '\n') -> skip;
