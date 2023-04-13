@@ -10,3 +10,5 @@ int main(){
     swap(a, b);
     return a;
 }
+
+void swap(int a, int b);

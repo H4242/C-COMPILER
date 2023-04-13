@@ -5,12 +5,59 @@
 
 using namespace std;
 
-// definitions
 antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-	cfg = new CFG("main");
+	currentCFG = new CFG("main");
+	cfgs.push_back(currentCFG);
 
 	visitChildren(ctx);
+
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
+{
+	string funcName = ctx->VAR()->getText();
+	currentCFG = new CFG(funcName);
+	cfgs.push_back(currentCFG);
+
+	int size = ctx->defParams()->VAR().size();
+	if (size > 6)
+	{
+		throw std::logic_error("error: function '" + funcName + "' can't have more than 6 arguments");
+	}
+
+	Operation *operation = new Rmem();
+	for (int i = 0; i < size; i++)
+	{
+		string varName = ctx->defParams()->VAR(i)->getText();
+		currentCFG->add_to_symbol_table(varName, Type(ctx->defParams()->type(i)->getText()));
+		currentCFG->add_to_current_bb(operation, Type("void"), {registers[i], to_string(currentCFG->get_symbol_table_index()[varName])});
+	}
+
+	visitChildren(ctx);
+
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx)
+{
+	string funcName = ctx->VAR()->getText();
+
+	int size = ctx->args()->expr().size();
+	if (size > 6)
+	{
+		throw std::logic_error("error: a function can't have more than 6 arguments");
+	}
+
+	Operation *operation = new Wmem();
+	for (int i = 0; i < size; i++)
+	{
+		string arg = visit(ctx->args()->expr(i)).as<string>();
+		currentCFG->add_to_current_bb(operation, Type("void"), {to_string(currentCFG->get_symbol_table_index()[arg]), registers[i]});
+	}
+
+	currentCFG->add_to_current_bb(new Call(), Type("void"), {funcName});
 
 	return 0;
 }
@@ -18,10 +65,10 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
 	string name = visit(ctx->expr()).as<string>();
-	Type type = cfg->get_var_type(name);
+	Type type = currentCFG->get_var_type(name);
 	Operation *operation = new Return_();
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	cfg->add_to_current_bb(operation, type, {name_index});
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	currentCFG->add_to_current_bb(operation, type, {name_index});
 	return 0;
 }
 
@@ -32,18 +79,18 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 
 	for (int i = 0; i < size; i++)
 	{
-		cfg->add_to_symbol_table(ctx->VAR(i)->getText(), type);
+		currentCFG->add_to_symbol_table(ctx->VAR(i)->getText(), type);
 	}
 	if (ctx->expr())
 	{
 		string var = ctx->VAR(size - 1)->getText();
-		string var_index = to_string(cfg->get_symbol_table_index()[var]);
+		string var_index = to_string(currentCFG->get_symbol_table_index()[var]);
 
 		string rightExpr = visit(ctx->expr()).as<string>();
-		string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
+		string rightExpr_index = to_string(currentCFG->get_symbol_table_index()[rightExpr]);
 
 		Operation *operation = new Copy();
-		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
+		currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_index, rightExpr_index});
 	}
 
 	return 0;
@@ -52,13 +99,13 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
 	string var = ctx->VAR()->getText();
-	string var_index = to_string(cfg->get_symbol_table_index()[var]);
+	string var_index = to_string(currentCFG->get_symbol_table_index()[var]);
 
 	string rightExpr = visit(ctx->expr()).as<string>();
-	string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
+	string rightExpr_index = to_string(currentCFG->get_symbol_table_index()[rightExpr]);
 
 	Operation *operation = new Copy();
-	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
+	currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_index, rightExpr_index});
 
 	return 0;
 }
@@ -66,12 +113,12 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 {
 	Type type = Type("int");
-	string name = cfg->create_new_tempvar(type);
-	cfg->add_const_to_symbol_table(name, stoi(ctx->CONST()->getText()));
+	string name = currentCFG->create_new_tempvar(type);
+	currentCFG->add_const_to_symbol_table(name, stoi(ctx->CONST()->getText()));
 	Operation *operation = new Ldconst();
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	string const_value = to_string(cfg->get_symbol_table_const()[name]);
-	cfg->add_to_current_bb(operation, type, {name_index, const_value});
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string const_value = to_string(currentCFG->get_symbol_table_const()[name]);
+	currentCFG->add_to_current_bb(operation, type, {name_index, const_value});
 	return name;
 }
 
@@ -86,9 +133,9 @@ antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 	string right = visit(ctx->expr(1)).as<string>();
 
 	// We assume that both expressions are of the same type
-	Type type = cfg->get_var_type(left);
+	Type type = currentCFG->get_var_type(left);
 
-	string name = cfg->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type);
 
 	Operation *operation;
 	string OP = ctx->op->getText();
@@ -100,11 +147,11 @@ antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 	{
 		operation = new Sub();
 	}
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	string left_index = to_string(cfg->get_symbol_table_index()[left]);
-	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string left_index = to_string(currentCFG->get_symbol_table_index()[left]);
+	string right_index = to_string(currentCFG->get_symbol_table_index()[right]);
 
-	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
+	currentCFG->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 	return name;
 }
 
@@ -113,9 +160,9 @@ antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
-	Type type = cfg->get_var_type(left);
+	Type type = currentCFG->get_var_type(left);
 
-	string name = cfg->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type);
 
 	Operation *operation;
 	string OP = ctx->op->getText();
@@ -132,11 +179,11 @@ antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 		operation = new Mod();
 	}
 
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	string left_index = to_string(cfg->get_symbol_table_index()[left]);
-	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string left_index = to_string(currentCFG->get_symbol_table_index()[left]);
+	string right_index = to_string(currentCFG->get_symbol_table_index()[right]);
 
-	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
+	currentCFG->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
 }
@@ -151,8 +198,8 @@ antlrcpp::Any ASTVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 	Operation *operation;
 	string expr = visit(ctx->expr()).as<string>();
 
-	Type type = cfg->get_var_type(expr);
-	string name = cfg->create_new_tempvar(type);
+	Type type = currentCFG->get_var_type(expr);
+	string name = currentCFG->create_new_tempvar(type);
 
 	string OP = ctx->op->getText();
 	if (OP == "-")
@@ -163,10 +210,10 @@ antlrcpp::Any ASTVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 	{
 		operation = new Unary_different();
 	}
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	string expr_index = to_string(cfg->get_symbol_table_index()[expr]);
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string expr_index = to_string(currentCFG->get_symbol_table_index()[expr]);
 
-	cfg->add_to_current_bb(operation, type, {name_index, expr_index});
+	currentCFG->add_to_current_bb(operation, type, {name_index, expr_index});
 	return name;
 }
 
@@ -175,8 +222,8 @@ antlrcpp::Any ASTVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
-	Type type = cfg->get_var_type(left);
-	string name = cfg->create_new_tempvar(type);
+	Type type = currentCFG->get_var_type(left);
+	string name = currentCFG->create_new_tempvar(type);
 
 	Operation *operation;
 
@@ -194,11 +241,11 @@ antlrcpp::Any ASTVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 		operation = new Bite_xor();
 	}
 
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	string left_index = to_string(cfg->get_symbol_table_index()[left]);
-	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string left_index = to_string(currentCFG->get_symbol_table_index()[left]);
+	string right_index = to_string(currentCFG->get_symbol_table_index()[right]);
 
-	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
+	currentCFG->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
 }
@@ -208,8 +255,8 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	string left = visit(ctx->expr(0)).as<string>();
 	string right = visit(ctx->expr(1)).as<string>();
 
-	Type type = cfg->get_var_type(left);
-	string name = cfg->create_new_tempvar(type);
+	Type type = currentCFG->get_var_type(left);
+	string name = currentCFG->create_new_tempvar(type);
 
 	Operation *operation;
 
@@ -239,16 +286,16 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 		operation = new Cmp_ne();
 	}
 
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	string left_index = to_string(cfg->get_symbol_table_index()[left]);
-	string right_index = to_string(cfg->get_symbol_table_index()[right]);
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string left_index = to_string(currentCFG->get_symbol_table_index()[left]);
+	string right_index = to_string(currentCFG->get_symbol_table_index()[right]);
 
-	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
+	currentCFG->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
 }
 
-CFG *ASTVisitor::getCFG()
+vector<CFG *> ASTVisitor::getCFGs()
 {
-	return cfg;
+	return cfgs;
 }

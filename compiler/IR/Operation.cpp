@@ -186,17 +186,17 @@ void Copy::gen_x86(vector<string> params, ostream &o)
 
 void Rmem::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t %" << params[0] << ", " << params[1] << "(%rbp)" << endl;
+    o << "\tmovl\t%" << params[0] << ", " << params[1] << "(%rbp)" << endl;
 }
 
 void Wmem::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t " << params[0] << "(%rbp), %" << params[1] << endl;
+    o << "\tmovl\t" << params[0] << "(%rbp), %" << params[1] << endl;
 }
 
 void Call::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tcall\t " << params[0] << endl;
+    o << "\tcall\t" << params[0] << endl;
 }
 
 void Cmp_gt::gen_x86(vector<string> params, ostream &o)

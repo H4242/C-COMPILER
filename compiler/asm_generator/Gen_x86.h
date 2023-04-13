@@ -6,9 +6,9 @@
 class Gen_x86 : public CodeGen
 {
 public:
-    Gen_x86(CFG *cfg) : CodeGen(cfg) {}
+    Gen_x86(vector<CFG *> cfgs) : CodeGen(cfgs) {}
     virtual ~Gen_x86() {}
     void gen_asm(ostream &o);
-    virtual void gen_asm_prologue(ostream &o);
-    virtual void gen_asm_epilogue(ostream &o);
+    virtual void gen_asm_prologue(ostream &o, string name) override;
+    virtual void gen_asm_epilogue(ostream &o) override;
 };

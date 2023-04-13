@@ -29,8 +29,13 @@ public:
 	virtual antlrcpp::Any visitBitexpr(ifccParser::BitexprContext *ctx) override;
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
 	// 4.7
-	CFG *getCFG();
+	vector<CFG *> getCFGs();
+	// 4.9
+	virtual antlrcpp::Any visitFunctiondef(ifccParser::FunctiondefContext *ctx) override;
+	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
 
 protected:
-	CFG *cfg;
+	vector<CFG *> cfgs;
+	CFG *currentCFG;
+	vector<string> registers = {"edi", "esi", "edx", "ecx", "e8", "e9"};
 };

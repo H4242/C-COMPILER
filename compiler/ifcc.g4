@@ -4,20 +4,20 @@ axiom: function* prog function*;
 
 block : '{' (assignment | declaration | callFunction)* returnstmt? '}';
 
-function : type VAR '(' params? ')' ';'	 		#functiondecl
- 		| type VAR '(' params? ')' block 		#functiondef
+function : retType=('int'|'char'|'void') VAR '(' declParams? ')' ';'	#functiondecl
+ 		| retType=('int'|'char'|'void') VAR '(' defParams? ')' block 	#functiondef
 		;
 
-params : type VAR (',' type VAR)*;
+declParams : type VAR (',' type VAR)*;
+defParams : type VAR (',' type VAR)*;
 
 callFunction: VAR '(' args? ')' ';';
 
 args: expr (',' expr)*;
 
-prog:
-	'int' 'main' '(' ')' block;
+prog: 'int' 'main' '(' ')' block;
 
-returnstmt: 'return' expr ';';
+returnstmt: 'return' expr? ';';
 
 declaration: type VAR (',' VAR)* ('=' expr)? ';';
 

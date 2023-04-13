@@ -59,7 +59,7 @@ int main(int argn, const char **argv)
   ASTVisitor v;
   v.visit(tree);
 
-  CodeGen *codegen = new Gen_x86(v.getCFG());
+  CodeGen *codegen = new Gen_x86(v.getCFGs());
 
   codegen->gen_asm(std::cout);
 

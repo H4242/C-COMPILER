@@ -10,7 +10,7 @@ class Function
 public:
     bool operator!=(const Function &f) const
     {
-        return name != f.name && returnType != f.returnType && paramsTypes != f.paramsTypes && paramsCount != f.paramsCount;
+        return name != f.name || returnType != f.returnType || paramsTypes != f.paramsTypes || paramsCount != f.paramsCount;
     }
 
     string name = "";

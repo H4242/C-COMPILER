@@ -16,13 +16,16 @@ public:
 	virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
 	virtual antlrcpp::Any visitAssignment(ifccParser::AssignmentContext *ctx) override;
 	virtual antlrcpp::Any visitVarexpr(ifccParser::VarexprContext *ctx) override;
-	virtual antlrcpp::Any visitFunctiondef(ifccParser::FunctiondefContext *context) override;
-	virtual antlrcpp::Any visitFunctiondecl(ifccParser::FunctiondeclContext *context) override;
-	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *context) override;
+	virtual antlrcpp::Any visitFunctiondef(ifccParser::FunctiondefContext *ctx) override;
+	virtual antlrcpp::Any visitFunctiondecl(ifccParser::FunctiondeclContext *ctx) override;
+	virtual antlrcpp::Any visitDeclParams(ifccParser::DeclParamsContext *ctx) override;
+	virtual antlrcpp::Any visitDefParams(ifccParser::DefParamsContext *ctx) override;
+	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
 
 protected:
 	unordered_map<string, bool> usedVariables = {};
 	unordered_map<string, Function> declaredFunctions = {};
 	unordered_map<string, Function> definedFunctions = {};
 	vector<Function> calledFunctions = {};
+	string currentFunctionName = "";
 };
