@@ -10,6 +10,8 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 	currentCFG = new CFG("main");
 	cfgs.push_back(currentCFG);
 
+	currentFunctionName = "main";
+
 	visitChildren(ctx);
 
 	return 0;
@@ -21,6 +23,8 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	currentCFG = new CFG(funcName);
 	cfgs.push_back(currentCFG);
 
+	currentFunctionName = funcName;
+
 	int size = ctx->defParams()->VAR().size();
 	if (size > 6)
 	{
@@ -30,7 +34,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	Operation *operation = new Rmem();
 	for (int i = 0; i < size; i++)
 	{
-		string varName = ctx->defParams()->VAR(i)->getText();
+		string varName = funcName + "_" + ctx->defParams()->VAR(i)->getText();
 		currentCFG->add_to_symbol_table(varName, Type(ctx->defParams()->type(i)->getText()));
 		currentCFG->add_to_current_bb(operation, Type("void"), {registers[i], to_string(currentCFG->get_symbol_table_index()[varName])});
 	}
@@ -79,11 +83,11 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 
 	for (int i = 0; i < size; i++)
 	{
-		currentCFG->add_to_symbol_table(ctx->VAR(i)->getText(), type);
+		currentCFG->add_to_symbol_table(currentFunctionName + "_" + ctx->VAR(i)->getText(), type);
 	}
 	if (ctx->expr())
 	{
-		string var = ctx->VAR(size - 1)->getText();
+		string var = currentFunctionName + "_" + ctx->VAR(size - 1)->getText();
 		string var_index = to_string(currentCFG->get_symbol_table_index()[var]);
 
 		string rightExpr = visit(ctx->expr()).as<string>();
@@ -98,7 +102,7 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	string var = ctx->VAR()->getText();
+	string var = currentFunctionName + "_" + ctx->VAR()->getText();
 	string var_index = to_string(currentCFG->get_symbol_table_index()[var]);
 
 	string rightExpr = visit(ctx->expr()).as<string>();
@@ -113,7 +117,7 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 {
 	Type type = Type("int");
-	string name = currentCFG->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
 	currentCFG->add_const_to_symbol_table(name, stoi(ctx->CONST()->getText()));
 	Operation *operation = new Ldconst();
 	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
@@ -124,7 +128,7 @@ antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
-	return ctx->VAR()->getText();
+	return currentFunctionName + "_" + ctx->VAR()->getText();
 }
 
 antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
@@ -135,7 +139,7 @@ antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
 	// We assume that both expressions are of the same type
 	Type type = currentCFG->get_var_type(left);
 
-	string name = currentCFG->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
 
 	Operation *operation;
 	string OP = ctx->op->getText();
@@ -162,7 +166,7 @@ antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 
 	Type type = currentCFG->get_var_type(left);
 
-	string name = currentCFG->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
 
 	Operation *operation;
 	string OP = ctx->op->getText();
@@ -199,7 +203,7 @@ antlrcpp::Any ASTVisitor::visitUnaryexpr(ifccParser::UnaryexprContext *ctx)
 	string expr = visit(ctx->expr()).as<string>();
 
 	Type type = currentCFG->get_var_type(expr);
-	string name = currentCFG->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
 
 	string OP = ctx->op->getText();
 	if (OP == "-")
@@ -223,7 +227,7 @@ antlrcpp::Any ASTVisitor::visitBitexpr(ifccParser::BitexprContext *ctx)
 	string right = visit(ctx->expr(1)).as<string>();
 
 	Type type = currentCFG->get_var_type(left);
-	string name = currentCFG->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
 
 	Operation *operation;
 
@@ -256,7 +260,7 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	string right = visit(ctx->expr(1)).as<string>();
 
 	Type type = currentCFG->get_var_type(left);
-	string name = currentCFG->create_new_tempvar(type);
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
 
 	Operation *operation;
 

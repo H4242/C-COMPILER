@@ -38,4 +38,5 @@ protected:
 	vector<CFG *> cfgs;
 	CFG *currentCFG;
 	vector<string> registers = {"edi", "esi", "edx", "ecx", "e8", "e9"};
+	string currentFunctionName = "";
 };

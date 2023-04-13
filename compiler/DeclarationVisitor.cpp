@@ -46,6 +46,8 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondecl(ifccParser::FunctiondeclCont
 	{
 		throw std::logic_error("error: redeclaration of '" + funcName + "'");
 	}
+	currentFunctionName = funcName;
+
 	Function func;
 	func.name = funcName;
 	func.returnType = ctx->retType->getText();
@@ -61,8 +63,6 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondecl(ifccParser::FunctiondeclCont
 		throw std::logic_error("error: conflicting function signature for '" + funcName + "'");
 	}
 
-	currentFunctionName = funcName;
-
 	visitChildren(ctx);
 
 	return 0;
@@ -75,6 +75,8 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 	{
 		throw std::logic_error("error: redefinition of '" + funcName + "'");
 	}
+	currentFunctionName = funcName;
+
 	Function func;
 	func.name = funcName;
 	func.returnType = ctx->retType->getText();
@@ -89,8 +91,6 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 	{
 		throw std::logic_error("error: conflicting function signature for '" + funcName + "'");
 	}
-
-	currentFunctionName = funcName;
 
 	visitChildren(ctx);
 
@@ -140,7 +140,9 @@ antlrcpp::Any DeclarationVisitor::visitCallFunction(ifccParser::CallFunctionCont
 	func.name = funcName;
 	func.paramsCount = ctx->args()->expr().size();
 	calledFunctions.push_back(func);
+
 	visitChildren(ctx);
+
 	return 0;
 }
 
@@ -166,8 +168,7 @@ antlrcpp::Any DeclarationVisitor::visitDeclaration(ifccParser::DeclarationContex
 
 antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	string name = ctx->VAR()->getText();
-	string varName = currentFunctionName + "_" + name;
+	string varName = currentFunctionName + "_" + ctx->VAR()->getText();
 	if (usedVariables.find(varName) == usedVariables.end())
 	{
 		throw std::logic_error("error: '" + varName + "' undeclared");
@@ -180,13 +181,12 @@ antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext 
 
 antlrcpp::Any DeclarationVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
-	string name = ctx->VAR()->getText();
-	string varName = currentFunctionName + "_" + name;
+	string varName = currentFunctionName + "_" + ctx->VAR()->getText();
 	if (usedVariables.find(varName) == usedVariables.end())
 	{
 		throw std::logic_error("error: '" + varName + "' undeclared");
 	}
 	usedVariables[varName] = true;
 
-	return name;
+	return varName;
 }

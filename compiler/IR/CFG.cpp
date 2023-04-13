@@ -26,9 +26,9 @@ void CFG::add_to_symbol_table(string name, Type t)
     symbolTableType[name] = t;
 }
 
-string CFG::create_new_tempvar(Type t)
+string CFG::create_new_tempvar(Type t, string funcName)
 {
-    string name = "!tmp" + to_string(nextFreeSymbolIndex);
+    string name = funcName + "_" + "!tmp" + to_string(nextFreeSymbolIndex);
     add_to_symbol_table(name, t);
     return name;
 }
