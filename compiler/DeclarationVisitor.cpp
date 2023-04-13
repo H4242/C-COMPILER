@@ -117,11 +117,11 @@ antlrcpp::Any DeclarationVisitor::visitDefParams(ifccParser::DefParamsContext *c
 	int size = ctx->VAR().size();
 	for (int i = 0; i < size; i++)
 	{
+		string varName = currentFunctionName + "_" + ctx->VAR(i)->getText();
 		if (usedVariables.find(ctx->VAR(i)->getText()) != usedVariables.end())
 		{
 			throw std::logic_error("error: redeclaration of '" + ctx->VAR(i)->getText() + "' in function '" + currentFunctionName + "'");
 		}
-		string varName = currentFunctionName + "_" + ctx->VAR(i)->getText();
 		usedVariables[varName] = false;
 	}
 	return 0;
@@ -149,11 +149,11 @@ antlrcpp::Any DeclarationVisitor::visitDeclaration(ifccParser::DeclarationContex
 	int size = ctx->VAR().size();
 	for (int i = 0; i < size; i++)
 	{
-		if (usedVariables.find(ctx->VAR(i)->getText()) != usedVariables.end())
+		string varName = currentFunctionName + "_" + ctx->VAR(i)->getText();
+		if (usedVariables.find(varName) != usedVariables.end())
 		{
 			throw std::logic_error("error: redeclaration of '" + ctx->VAR(i)->getText() + "'");
 		}
-		string varName = currentFunctionName + "_" + ctx->VAR(i)->getText();
 		usedVariables[varName] = false;
 	}
 	if (ctx->expr())
