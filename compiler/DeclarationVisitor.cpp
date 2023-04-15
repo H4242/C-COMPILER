@@ -18,7 +18,7 @@ antlrcpp::Any DeclarationVisitor::visitProg(ifccParser::ProgContext *ctx)
 	return 0;
 }
 
-antlrcpp::Any DeclarationVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
+antlrcpp::Any DeclarationVisitor::visitSimpledeclaration(ifccParser::SimpledeclarationContext *ctx)
 {
 	int size = ctx->VAR().size();
 	for (int i = 0; i < size; i++)
@@ -37,9 +37,9 @@ antlrcpp::Any DeclarationVisitor::visitDeclaration(ifccParser::DeclarationContex
 	return 0;
 }
 
-antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
+antlrcpp::Any DeclarationVisitor::visitSimpleassignment(ifccParser::SimpleassignmentContext *ctx)
 {
-	string name = ctx->VAR()->getText();
+	string name = ctx->lvalue()->getText();
 	if (usedVariables.find(name) == usedVariables.end())
 	{
 		throw std::logic_error("error: '" + name + "' undeclared");

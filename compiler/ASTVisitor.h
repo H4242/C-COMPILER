@@ -17,8 +17,21 @@ public:
 	// 4.2
 	virtual antlrcpp::Any visitReturnstmt(ifccParser::ReturnstmtContext *ctx) override;
 	// 4.3
-	virtual antlrcpp::Any visitDeclaration(ifccParser::DeclarationContext *ctx) override;
-	virtual antlrcpp::Any visitAssignment(ifccParser::AssignmentContext *ctx) override;
+	virtual antlrcpp::Any visitSimpledeclaration(ifccParser::SimpledeclarationContext *ctx) override;
+	// virtual antlrcpp::Any visitPointerdeclaration(ifccParser::PointerdeclarationContext *ctx) override;
+	virtual antlrcpp::Any visitSimpleassignment(ifccParser::SimpleassignmentContext *ctx) override;
+	/*
+	virtual antlrcpp::Any visitArrayassignment(ifccParser::ArrayassignmentContext *ctx) override;
+	virtual antlrcpp::Any visitStructassignment(ifccParser::StructassignmentContext *ctx) override;
+	virtual antlrcpp::Any visitPtrstructassignment(ifccParser::PtrstructassignmentContext *ctx) override;
+	virtual antlrcpp::Any visitPointerassignment(ifccParser::PointerassignmentContext *ctx) override;
+	virtual antlrcpp::Any visitStructlvalue(ifccParser::StructlvalueContext *ctx) override;
+	virtual antlrcpp::Any visitPtrlvalue(ifccParser::PtrlvalueContext *ctx) override;
+	virtual antlrcpp::Any visitVarlvalue(ifccParser::VarlvalueContext *ctx) override;
+	virtual antlrcpp::Any visitPtrstructlvalue(ifccParser::PtrstructlvalueContext *ctx) override;
+	virtual antlrcpp::Any visitArraylvalue(ifccParser::ArraylvalueContext *ctx) override;
+	*/
+
 	// 4.4
 	virtual antlrcpp::Any visitConstexpr(ifccParser::ConstexprContext *ctx) override;
 	virtual antlrcpp::Any visitVarexpr(ifccParser::VarexprContext *ctx) override;

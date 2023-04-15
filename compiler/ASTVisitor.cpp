@@ -25,7 +25,7 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 	return 0;
 }
 
-antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
+antlrcpp::Any ASTVisitor::visitSimpledeclaration(ifccParser::SimpledeclarationContext *ctx)
 {
 	int size = ctx->VAR().size();
 	Type type = Type(ctx->type->getText());
@@ -49,9 +49,9 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 	return 0;
 }
 
-antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
+antlrcpp::Any ASTVisitor::visitSimpleassignment(ifccParser::SimpleassignmentContext *ctx)
 {
-	string var = ctx->VAR()->getText();
+	string var = ctx->lvalue()->getText();
 	string var_index = to_string(cfg->get_symbol_table_index()[var]);
 
 	string rightExpr = visit(ctx->expr()).as<string>();
