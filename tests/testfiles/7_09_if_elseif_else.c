@@ -2,17 +2,21 @@ int main()
 {
     int a = 2;
     int b = 1;
-    if (a == 1 && b == 1)
+    if (a + 1 == 4)
     {
-        a = 5;
-    }
-    else if (a == 2 && b == 1)
-    {
-        a = 6;
+        a = -1;
     }
     else
     {
-        a = 7;
+        if (b == 1 + a)
+        {
+            a = 5;
+        }
+        else
+        {
+            a = 6;
+        }
     }
-    return a;
+    int c = a + b;
+    return c;
 }
