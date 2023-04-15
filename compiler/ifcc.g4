@@ -12,21 +12,24 @@ declaration:
 
 assignment: VAR '=' expr ';';
 
-if_stmt: 'if' condition_block 'else' stat_block;
+if_stmt:
+	'if' '(' expr ')' stat_block (
+		'else if' '(' expr ')' stat_block
+	)* ('else' stat_block)?;
 
-condition_block: '(' expr ')' stat_block;
+stat_block: '{' (assignment | declaration | if_stmt)+ '}';
 
-stat_block: '{' (assignment | declaration | if_stmt)* '}';
+//instr_block: (assignment | declaration | if_stmt);
 
 expr:
-	op = ('-' | '!') expr						# unaryexpr
-	| expr op = ('*' | '/') expr				# muldiv
-	| expr op = ('+' | '-') expr				# addsub
-	| expr op = ('<' | '>' | '==' | '!=') expr	# compexpr
-	| expr op = ('&' | '|' | '^') expr			# bitexpr
-	| CONST										# constexpr
-	| VAR										# varexpr
-	| '(' expr ')'								# parexpr;
+	op = ('-' | '!') expr										# unaryexpr
+	| expr op = ('*' | '/') expr								# muldiv
+	| expr op = ('+' | '-') expr								# addsub
+	| expr op = ('<' | '>' | '==' | '!=' | '<=' | '>=') expr	# compexpr
+	| expr op = ('&' | '|' | '^') expr							# bitexpr
+	| CONST														# constexpr
+	| VAR														# varexpr
+	| '(' expr ')'												# parexpr;
 
 CONST: [0-9]+;
 COMMENT: ('/*' .*? '*/' | '//' .*? '\n') -> skip;

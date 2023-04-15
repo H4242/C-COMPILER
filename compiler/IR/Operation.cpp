@@ -142,6 +142,18 @@ void Return_::genIR(vector<string> params)
     instrIR = "cmp_le\t" + instrIR;
 }
 
+void Cmp::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "cmp\t" + instrIR;
+}
+
+void JumpEqual::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "je\t" + instrIR;
+}
+
 void Add::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %edx\n"
@@ -294,4 +306,14 @@ void Bite_and::gen_x86(vector<string> params, ostream &o)
 void Return_::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[0] << "(%rbp), %eax\n";
+}
+
+void Cmp::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tcmpl\t$1," << params[0] << "(%rbp)\n";
+}
+
+void JumpEqual::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tje\t" << params[0] << "\n";
 }

@@ -248,37 +248,55 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	return name;
 }
 
+antlrcpp::Any ASTVisitor::visitStat_block(ifccParser::Stat_blockContext *ctx)
+{
+	visitChildren(ctx);
+	return 0;
+}
+
 antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
 	BasicBlock *test_bb = cfg->get_current_bb();
-	BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
-	BasicBlock *then_last_bb = cfg->get_current_bb();
-	BasicBlock *else_bb = new BasicBlock(cfg->new_BB_name());
-	BasicBlock *else_last_bb = cfg->get_current_bb();
-
 	BasicBlock *endif_bb = new BasicBlock(cfg->new_BB_name());
-
-	string expr_condition = visit(ctx->condition_block()->expr()).as<string>();
-	// Write the condition in the test_bb
-
-	test_bb->set_exit_true(then_bb);
-	test_bb->set_exit_false(else_bb);
-
-	then_last_bb->set_exit_true(endif_bb);
-	else_last_bb->set_exit_true(endif_bb);
-
-	then_last_bb->set_exit_false(NULL);
-	else_last_bb->set_exit_false(NULL);
-
-	cfg->set_current_bb(endif_bb);
-
-	cfg->add_bb(then_bb);
-	cfg->add_bb(else_bb);
+	auto exprs = ctx->expr();
+	auto stat_blocks = ctx->stat_block();
+	bool elseClause = false;
+	for (int i = 0; i < stat_blocks.size(); i++)
+	{
+		auto stat_block = stat_blocks[i];
+		string expr_name = "";
+		if (i < exprs.size())
+		{
+			auto expr = exprs[i];
+			cfg->set_current_bb(test_bb);
+			expr_name = visit(expr).as<string>();
+		}
+		BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
+		then_bb->set_next_block(endif_bb);
+		cfg->add_bb(then_bb);
+		visit(stat_block);
+		cfg->get_current_bb()->set_next_block(endif_bb);
+		cfg->set_current_bb(then_bb);
+		if (i < exprs.size())
+		{
+			Operation *operationCmp = new Cmp();
+			string expr_name_index = to_string(cfg->get_symbol_table_index()[expr_name]);
+			test_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
+			Operation *operationJumpEqual = new JumpEqual();
+			test_bb->add_IRInstr(operationJumpEqual, Type("int"), {then_bb->get_label()});
+		}
+		else
+		{
+			test_bb->set_next_block(cfg->get_current_bb());
+			elseClause = true;
+		}
+	}
+	if (!elseClause)
+	{
+		test_bb->set_next_block(endif_bb);
+	}
 	cfg->add_bb(endif_bb);
-
-	string result = visit(ctx->condition_block()->stat_block());
-	return result;
-	// TODO: check if the return is correct
+	return 0;
 }
 
 CFG *ASTVisitor::getCFG()

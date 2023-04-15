@@ -1,11 +1,13 @@
-int main(){
-    int a = 1;
-    if(a == 1){
-        a = 2;
-        a = a + 1;
+int main()
+{
+    int a = 2;
+    if (a == 1)
+    {
+        a = 5;
     }
-    else{
-        a = 3;
+    else
+    {
+        a = 7;
     }
     return a;
 }
