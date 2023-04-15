@@ -295,3 +295,42 @@ void Return_::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[0] << "(%rbp), %eax\n";
 }
+
+// TODO: implement the following functions
+// ArrayStore
+// ArrayLoad
+// ArrayDeclaration
+
+void ArrayStore::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tmovl\t" << params[2] << "(%rbp), %edx\n"
+      << "\tmovl\t%edx, " << params[0] << "(%rbp, %eax, 4)\n";
+}
+
+void ArrayStore::genIR(vector<string> params)
+{
+    instrIR = "ArrayStore"; // Revoir
+}
+
+void ArrayLoad::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tmovl\t" << params[0] << "(%rbp, %eax, 4), %eax\n"
+      << "\tmovl\t%eax, " << params[2] << "(%rbp)\n";
+}
+
+void ArrayLoad::genIR(vector<string> params)
+{
+    instrIR = "ArrayLoad"; // Revoir
+}
+
+void ArrayDeclaration::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tsubl\t$" << params[1] << ", %rsp\n";
+}
+
+void ArrayDeclaration::genIR(vector<string> params)
+{
+    instrIR = "ArrayDeclaration"; // Revoir
+}

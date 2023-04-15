@@ -9,21 +9,15 @@ returnstmt: 'return' expr ';';
 
 declaration:
 	type = ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';'	# simpledeclaration
-	| type = ('int' | 'char') VAR '*' ';'					# pointerdeclaration;
+	| type = ('int' | 'char') VAR '*' ';'					# pointerdeclaration
+	| type = ('int' | 'char') VAR '[' CONST ']' ';'			# arraydeclaration;
 
-assignment:
-	lvalue '=' expr ';'					# simpleassignment
-	| lvalue '[' expr ']' '=' expr ';'	# arrayassignment
-	| lvalue '.' VAR '=' expr ';'		# structassignment
-	| lvalue '->' VAR '=' expr ';'		# ptrstructassignment
-	| lvalue '*' '=' expr ';'			# pointerassignment;
+assignment: lvalue '=' expr ';';
 
 lvalue:
-	VAR						# varlvalue
-	| lvalue '[' expr ']'	# arraylvalue
-	| lvalue '.' VAR		# structlvalue
-	| lvalue '->' VAR		# ptrstructlvalue
-	| '*' lvalue			# ptrlvalue;
+	VAR					# varlvalue
+	| VAR '[' expr ']'	# arraylvalue
+	| '*' VAR			# ptrlvalue;
 
 expr:
 	op = ('-' | '!') expr						# unaryexpr

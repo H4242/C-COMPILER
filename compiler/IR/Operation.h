@@ -234,3 +234,57 @@ public:
 
 protected:
 };
+
+class ArrayDeclaration : public Operation
+{
+public:
+    ArrayDeclaration() : Operation() {}
+    ArrayDeclaration(int size) : Operation()
+    {
+        arraySize = size;
+    }
+    void genIR(vector<string> params);
+    void gen_x86(vector<string> params, ostream &o);
+
+    int getArraySize();
+    int getArrayOffset();
+
+protected:
+    int arraySize;
+    int arrayOffset;
+};
+
+// TODO: implement
+class ArrayStore : public Operation
+{
+public:
+    ArrayStore() : Operation() {}
+    void genIR(vector<string> params);
+    void gen_x86(vector<string> params, ostream &o);
+
+    int getArraySize();
+    int getArrayOffset();
+    int getArrayIndex();
+
+protected:
+    int arraySize;
+    int arrayOffset;
+    int arrayIndex;
+};
+
+class ArrayLoad : public Operation
+{
+public:
+    ArrayLoad() : Operation() {}
+    void genIR(vector<string> params);
+    void gen_x86(vector<string> params, ostream &o);
+
+    int getArraySize();
+    int getArrayOffset();
+    int getArrayIndex();
+
+protected:
+    int arraySize;
+    int arrayOffset;
+    int arrayIndex;
+};

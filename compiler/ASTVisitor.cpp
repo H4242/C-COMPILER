@@ -49,18 +49,68 @@ antlrcpp::Any ASTVisitor::visitSimpledeclaration(ifccParser::SimpledeclarationCo
 	return 0;
 }
 
-antlrcpp::Any ASTVisitor::visitSimpleassignment(ifccParser::SimpleassignmentContext *ctx)
+antlrcpp::Any ASTVisitor::visitArraydeclaration(ifccParser::ArraydeclarationContext *ctx)
+{
+	string var = ctx->VAR()->getText(); // name of the array
+	string var_index = to_string(cfg->get_symbol_table_index()[var]);
+
+	int size = stoi(ctx->CONST()->getText()); // size of the array
+	// Type type = Type(ctx->type->getText());
+	// TODO gerer le type
+
+	Operation *operation = new ArrayDeclaration(size);
+	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index});
+
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
 	string var = ctx->lvalue()->getText();
 	string var_index = to_string(cfg->get_symbol_table_index()[var]);
+	antlrcpp::Any expr_ctx = ctx->lvalue();
 
-	string rightExpr = visit(ctx->expr()).as<string>();
-	string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
+	if (expr_ctx)
+	{
+		// array assignment
+		string rightExpr = visit(ctx->expr()).as<string>();
+		string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
 
-	Operation *operation = new Copy();
-	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
+		Operation *operation = new ArrayStore();
+		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
+	}
+	else
+	{
+		// simple assignment
+		string rightExpr = visit(ctx->expr()).as<string>();
+		string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
+
+		Operation *operation = new Copy();
+		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
+	}
 
 	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitVarlvalue(ifccParser::VarlvalueContext *ctx)
+{
+	return ctx->VAR()->getText();
+}
+
+antlrcpp::Any ASTVisitor::visitArraylvalue(ifccParser::ArraylvalueContext *ctx)
+{
+	string var = ctx->VAR()->getText();
+	string var_index = to_string(cfg->get_symbol_table_index()[var]);
+
+	string indexExpr = visit(ctx->expr()).as<string>();
+	string indexExpr_index = to_string(cfg->get_symbol_table_index()[indexExpr]);
+
+	Operation *operation = new ArrayLoad();
+	Type type = cfg->get_var_type(var);
+	string name = cfg->create_new_tempvar(type);
+	string name_index = to_string(cfg->get_symbol_table_index()[name]);
+	cfg->add_to_current_bb(operation, type, {name_index, var_index, indexExpr_index});
+	return name;
 }
 
 antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)

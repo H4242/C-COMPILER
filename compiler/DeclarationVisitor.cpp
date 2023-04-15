@@ -37,7 +37,7 @@ antlrcpp::Any DeclarationVisitor::visitSimpledeclaration(ifccParser::Simpledecla
 	return 0;
 }
 
-antlrcpp::Any DeclarationVisitor::visitSimpleassignment(ifccParser::SimpleassignmentContext *ctx)
+antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
 	string name = ctx->lvalue()->getText();
 	if (usedVariables.find(name) == usedVariables.end())

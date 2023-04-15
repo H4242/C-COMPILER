@@ -12,7 +12,7 @@ class DeclarationVisitor : public ifccBaseVisitor
 public:
 	virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
 	virtual antlrcpp::Any visitSimpledeclaration(ifccParser::SimpledeclarationContext *ctx) override;
-	virtual antlrcpp::Any visitSimpleassignment(ifccParser::SimpleassignmentContext *ctx) override;
+	virtual antlrcpp::Any visitAssignment(ifccParser::AssignmentContext *ctx) override;
 	virtual antlrcpp::Any visitVarexpr(ifccParser::VarexprContext *ctx) override;
 
 protected:
