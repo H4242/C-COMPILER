@@ -299,6 +299,34 @@ antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 	return 0;
 }
 
+antlrcpp::Any ASTVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+	BasicBlock *test_bb = cfg->get_current_bb();
+	BasicBlock *endwhile_bb = new BasicBlock(cfg->new_BB_name());
+
+	auto expr = ctx->expr();
+	auto stat_block = ctx->stat_block();
+
+	BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
+	cfg->add_bb(then_bb);
+	visit(stat_block);
+
+	cfg->get_current_bb()->set_next_block(endwhile_bb);
+	cfg->set_current_bb(endwhile_bb);
+
+	string expr_name = visit(expr).as<string>();
+	string expr_name_index = to_string(cfg->get_symbol_table_index()[expr_name]);
+	Operation *operationCmp = new Cmp();
+	endwhile_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
+
+	Operation *operationJumpEqual = new JumpEqual();
+	endwhile_bb->add_IRInstr(operationJumpEqual, Type("int"), {then_bb->get_label()});
+
+	test_bb->set_next_block(endwhile_bb);
+	cfg->add_bb(endwhile_bb);
+	return 0;
+}
+
 CFG *ASTVisitor::getCFG()
 {
 	return cfg;

@@ -10,7 +10,7 @@ void Gen_x86::gen_asm(ostream &o)
         {
             instr->getOp()->gen_x86(instr->getParams(), o);
         }
-        if (bb->get_next_block())
+        if (bb->get_next_block() != nullptr)
         {
             o << "\tjmp\t" << bb->get_next_block()->get_label() << "\n";
         }

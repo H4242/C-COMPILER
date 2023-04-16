@@ -35,7 +35,11 @@ void BasicBlock::add_IRInstr(Operation *op, Type t, vector<string> params)
     }
 }*/
 
-void BasicBlock::set_next_block(BasicBlock *bb) { next_block = bb; }
+void BasicBlock::set_next_block(BasicBlock *bb)
+{
+    next_block = bb;
+    // cout << "********** cur block: " << label << "********next block: " << next_block->get_label() << endl;
+}
 
 BasicBlock *BasicBlock::get_next_block()
 {

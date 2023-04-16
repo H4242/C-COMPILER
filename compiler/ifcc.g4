@@ -3,7 +3,12 @@ grammar ifcc;
 axiom: prog;
 
 prog:
-	'int' 'main' '(' ')' '{' (assignment | declaration | if_stmt)* returnstmt '}';
+	'int' 'main' '(' ')' '{' (
+		assignment
+		| declaration
+		| if_stmt
+		| while_stmt
+	)* returnstmt '}';
 
 returnstmt: 'return' expr ';';
 
@@ -17,9 +22,10 @@ if_stmt:
 		'else if' '(' expr ')' stat_block
 	)* ('else' stat_block)?;
 
-stat_block: '{' (assignment | declaration | if_stmt)+ '}';
+stat_block:
+	'{' (assignment | declaration | if_stmt | while_stmt)+ '}';
 
-//instr_block: (assignment | declaration | if_stmt);
+while_stmt: 'while' '(' expr ')' stat_block;
 
 expr:
 	op = ('-' | '!') expr										# unaryexpr
