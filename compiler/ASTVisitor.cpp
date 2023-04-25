@@ -39,9 +39,30 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 		currentCFG->add_to_current_bb(operation, Type("void"), {registers[i], to_string(currentCFG->get_symbol_table_index()[varName])});
 	}
 
+	if (ctx->retType->getText() != "void")
+	{
+		currentCFG->add_to_symbol_table(funcName, Type(ctx->retType->getText()));
+	}
+
 	visitChildren(ctx);
 
 	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitCallexpr(ifccParser::CallexprContext *ctx)
+{
+	string funcName = visit(ctx->callFunction()).as<string>();
+	if (currentCFG->get_symbol_table_type().find(funcName) == currentCFG->get_symbol_table_type().end())
+	{
+		throw std::logic_error("error: function '" + funcName + "' is of type void");
+	}
+	Type type = currentCFG->get_var_type(funcName);
+	string returnVar = currentCFG->create_new_tempvar(type, currentFunctionName);
+	Operation *operation = new Rmem();
+	string returnVar_index = to_string(currentCFG->get_symbol_table_index()[returnVar]);
+	currentCFG->add_to_current_bb(operation, type, {"eax", returnVar_index});
+
+	return returnVar;
 }
 
 antlrcpp::Any ASTVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx)
@@ -60,19 +81,21 @@ antlrcpp::Any ASTVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx
 		string arg = visit(ctx->args()->expr(i)).as<string>();
 		currentCFG->add_to_current_bb(operation, Type("void"), {to_string(currentCFG->get_symbol_table_index()[arg]), registers[i]});
 	}
-
 	currentCFG->add_to_current_bb(new Call(), Type("void"), {funcName});
 
-	return 0;
+	return funcName;
 }
 
 antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
-	string name = visit(ctx->expr()).as<string>();
-	Type type = currentCFG->get_var_type(name);
-	Operation *operation = new Return_();
-	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
-	currentCFG->add_to_current_bb(operation, type, {name_index});
+	if (ctx->expr())
+	{
+		string name = visit(ctx->expr()).as<string>();
+		Type type = currentCFG->get_var_type(name);
+		Operation *operation = new Return_();
+		string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+		currentCFG->add_to_current_bb(operation, type, {name_index});
+	}
 	return 0;
 }
 
@@ -107,6 +130,11 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 
 	string rightExpr = visit(ctx->expr()).as<string>();
 	string rightExpr_index = to_string(currentCFG->get_symbol_table_index()[rightExpr]);
+
+	if (currentCFG->get_var_type(var) != currentCFG->get_var_type(rightExpr))
+	{
+		throw std::logic_error("error: type mismatch");
+	}
 
 	Operation *operation = new Copy();
 	currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_index, rightExpr_index});

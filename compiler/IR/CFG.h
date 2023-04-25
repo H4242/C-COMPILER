@@ -42,6 +42,7 @@ public:
     // getters
     vector<BasicBlock *> get_bbs();
     BasicBlock *get_current_bb();
+    int get_nextFreeSymbolIndex();
 
     string
     get_name()

@@ -89,3 +89,8 @@ BasicBlock *CFG::get_current_bb()
 {
     return current_bb;
 }
+
+int CFG::get_nextFreeSymbolIndex()
+{
+    return nextFreeSymbolIndex;
+}

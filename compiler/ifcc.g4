@@ -11,11 +11,11 @@ function : retType=('int'|'char'|'void') VAR '(' declParams? ')' ';'	#functionde
 declParams : type VAR (',' type VAR)*;
 defParams : type VAR (',' type VAR)*;
 
-callFunction: VAR '(' args? ')' ';';
+callFunction: VAR '(' args? ')';
 
 args: expr (',' expr)*;
 
-prog: 'int' 'main' '(' ')' block;
+prog: 'int' 'main' '(' ')' '{' (assignment | declaration | callFunction ';')* returnstmt '}';
 
 returnstmt: 'return' expr? ';';
 
@@ -31,7 +31,8 @@ expr:
 	| expr op=('&' | '|' | '^') expr			# bitexpr
 	| CONST										# constexpr
 	| VAR										# varexpr
-	| '(' expr ')'								# parexpr;
+	| '(' expr ')'								# parexpr
+	| callFunction								# callexpr;
 
 type : 'int' # inttype
 	| 'char' # chartype

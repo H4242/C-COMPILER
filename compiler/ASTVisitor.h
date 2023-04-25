@@ -33,6 +33,7 @@ public:
 	// 4.9
 	virtual antlrcpp::Any visitFunctiondef(ifccParser::FunctiondefContext *ctx) override;
 	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
+	virtual antlrcpp::Any visitCallexpr(ifccParser::CallexprContext *ctx) override;
 
 protected:
 	vector<CFG *> cfgs;
