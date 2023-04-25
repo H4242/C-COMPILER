@@ -2,13 +2,13 @@ int main()
 {
     int a = 1;
     int b = 1;
-    while (a < 3)
+    if (a < 3)
     {
-        a = a + 1;
-        if (b == 1)
-        {
-            b = 5;
-        }
+        a = 3;
     }
-    return a;
+    if (b == 1)
+    {
+        b = 3;
+    }
+    return a + b;
 }

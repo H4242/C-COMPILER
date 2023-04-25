@@ -31,7 +31,7 @@ public:
 protected:
   // BasicBlock *exit_true;    /**< pointer to the next basic block, true branch. If nullptr, return from procedure */
   // BasicBlock *exit_false;   /**< pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump */
-  BasicBlock *next_block;
+  BasicBlock *next_block = nullptr;
   string label;             /** < the CFG where this block belongs */
   vector<IRInstr *> instrs; /** < the instructions themselves. */
   string test_var_name;     /** < when generating IR code for an if(expr) or while(expr) etc,

@@ -294,8 +294,13 @@ antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 	if (!elseClause)
 	{
 		test_bb->set_next_block(endif_bb);
+		// cout << "**************** test_bb" << test_bb->get_label() << "  next " << test_bb->get_next_block()->get_label() << endl;
 	}
 	cfg->add_bb(endif_bb);
+	if (endif_bb->get_next_block() != nullptr)
+	{
+		// cout << "**************** endif_bb" << endif_bb->get_label() << "  next " << endif_bb->get_next_block()->get_label() << endl;
+	}
 	return 0;
 }
 
