@@ -23,7 +23,7 @@ if_stmt:
 	)* ('else' stat_block)?;
 
 stat_block:
-	'{' (assignment | declaration | if_stmt | while_stmt)+ '}';
+	'{' (assignment | declaration | if_stmt | while_stmt)* returnstmt? '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;
 

@@ -42,6 +42,7 @@ public:
     // getters
     vector<BasicBlock *> get_bbs();
     BasicBlock *get_current_bb();
+    BasicBlock *get_last_bb();
     void set_current_bb(BasicBlock *bb);
 
     string
@@ -63,6 +64,7 @@ protected:
 
     // basic block management
     BasicBlock *current_bb;
+    BasicBlock *last_bb;
 };
 
 #endif

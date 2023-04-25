@@ -11,7 +11,8 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 	cfg = new CFG("main");
 
 	visitChildren(ctx);
-
+	BasicBlock *last_block = cfg->get_last_bb();
+	cfg->add_bb(last_block);
 	return 0;
 }
 
@@ -22,6 +23,8 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 	Operation *operation = new Return_();
 	string name_index = to_string(cfg->get_symbol_table_index()[name]);
 	cfg->add_to_current_bb(operation, type, {name_index});
+	BasicBlock *last_block = cfg->get_last_bb();
+	cfg->get_current_bb()->set_next_block(last_block);
 	return 0;
 }
 
@@ -275,7 +278,16 @@ antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 		then_bb->set_next_block(endif_bb);
 		cfg->add_bb(then_bb);
 		visit(stat_block);
-		cfg->get_current_bb()->set_next_block(endif_bb);
+
+		if (cfg->get_current_bb()->get_next_block() != cfg->get_last_bb())
+		{
+			cfg->get_current_bb()->set_next_block(endif_bb);
+		}
+		else
+		{
+			then_bb->set_next_block(cfg->get_last_bb());
+		}
+
 		cfg->set_current_bb(then_bb);
 		if (i < exprs.size())
 		{
