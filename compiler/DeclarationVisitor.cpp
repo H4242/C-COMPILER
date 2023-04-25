@@ -5,53 +5,54 @@ using namespace std;
 
 antlrcpp::Any DeclarationVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-	visitChildren(ctx);
+	// visitChildren(ctx);
 
-	for (auto &var : usedVariables)
-	{
-		if (!var.second)
-		{
-			cerr << "warning: variable '" << var.first << "' declared but not used\n";
-		}
-	}
+	// for (auto &var : usedVariables)
+	// {
+	// 	if (!var.second)
+	// 	{
+	// 		cerr << "warning: variable '" << var.first << "' declared but not used\n";
+	// 	}
+	// }
 
 	return 0;
 }
 
 antlrcpp::Any DeclarationVisitor::visitSimpledeclaration(ifccParser::SimpledeclarationContext *ctx)
 {
-	int size = ctx->VAR().size();
-	for (int i = 0; i < size; i++)
-	{
-		if (usedVariables.find(ctx->VAR(i)->getText()) != usedVariables.end())
-		{
-			throw std::logic_error("error: redeclaration of '" + ctx->VAR(i)->getText() + "'");
-		}
-		usedVariables[ctx->VAR(i)->getText()] = false;
-	}
-	if (ctx->expr())
-	{
-		visit(ctx->expr());
-	}
+	// int size = ctx->VAR().size();
+	// for (int i = 0; i < size; i++)
+	// {
+	// 	if (usedVariables.find(ctx->VAR(i)->getText()) != usedVariables.end())
+	// 	{
+	// 		throw std::logic_error("error: redeclaration of '" + ctx->VAR(i)->getText() + "'");
+	// 	}
+	// 	usedVariables[ctx->VAR(i)->getText()] = false;
+	// }
+	// if (ctx->expr())
+	// {
+	// 	visit(ctx->expr());
+	// }
 
 	return 0;
 }
 
 antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	string name = ctx->lvalue()->getText();
+	/*string name = ctx->lvalue()->getText();
 	if (usedVariables.find(name) == usedVariables.end())
 	{
 		throw std::logic_error("error: '" + name + "' undeclared");
 	}
 	visit(ctx->expr());
 	usedVariables[name] = true;
-
+_*/
 	return 0;
 }
 
 antlrcpp::Any DeclarationVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
+	/*
 	string name = ctx->VAR()->getText();
 	if (usedVariables.find(name) == usedVariables.end())
 	{
@@ -60,4 +61,6 @@ antlrcpp::Any DeclarationVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 	usedVariables[name] = true;
 
 	return name;
+	*/
+	return 0;
 }

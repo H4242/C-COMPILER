@@ -34,6 +34,7 @@ public:
 	virtual antlrcpp::Any visitUnaryexpr(ifccParser::UnaryexprContext *ctx) override;
 	virtual antlrcpp::Any visitBitexpr(ifccParser::BitexprContext *ctx) override;
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
+	virtual antlrcpp::Any visitLvalueexpr(ifccParser::LvalueexprContext *ctx) override;
 	// 4.7
 	CFG *getCFG();
 

@@ -316,6 +316,11 @@ void ArrayStore::genIR(vector<string> params)
 void ArrayLoad::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tmovl\t$" << params[3] << ", " << params[2] << "(%rbp)\n"
+      << "\timull\t" << params[2] << "(%rbp), %eax\n";
+    // TODO: voir ajouter la valeur dans eax a la valeur base de l'array dans %eax
+
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tmovl\t" << params[0] << "(%rbp, %eax, 4), %eax\n"
       << "\tmovl\t%eax, " << params[2] << "(%rbp)\n";
 }
@@ -327,7 +332,11 @@ void ArrayLoad::genIR(vector<string> params)
 
 void ArrayDeclaration::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tsubl\t$" << params[1] << ", %rsp\n";
+
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tmovl\t$" << params[3] << ", " << params[2] << "(%rbp)\n"
+      << "\timull\t" << params[2] << "(%rbp), %eax\n"
+      << "\tsubq\t%eax, %rsp\n";
 }
 
 void ArrayDeclaration::genIR(vector<string> params)

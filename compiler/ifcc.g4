@@ -8,26 +8,26 @@ prog:
 returnstmt: 'return' expr ';';
 
 declaration:
-	type = ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';'	# simpledeclaration
-	| type = ('int' | 'char') VAR '*' ';'					# pointerdeclaration
-	| type = ('int' | 'char') VAR '[' CONST ']' ';'			# arraydeclaration;
+	//type = ('int' | 'char') VAR '*' ';'							# pointerdeclaration
+	type = ('int' | 'char') VAR '[' expr ']' ';'				# arraydeclaration
+	| type = ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';'	# simpledeclaration;
 
 assignment: lvalue '=' expr ';';
 
 lvalue:
-	VAR					# varlvalue
-	| VAR '[' expr ']'	# arraylvalue
-	| '*' VAR			# ptrlvalue;
+	VAR '[' expr ']' # arraylvalue
+	//| '*' VAR			# ptrlvalue
+	| VAR # varlvalue;
 
 expr:
-	op = ('-' | '!') expr						# unaryexpr
+	lvalue										# lvalueexpr
+	| op = ('-' | '!') expr						# unaryexpr
 	| expr op = ('*' | '/') expr				# muldiv
 	| expr op = ('+' | '-') expr				# addsub
 	| expr op = ('<' | '>' | '==' | '!=') expr	# compexpr
 	| expr op = ('&' | '|' | '^') expr			# bitexpr
 	| CONST										# constexpr
 	| VAR										# varexpr
-	| lvalue									# lvalueexpr
 	| '(' expr ')'								# parexpr;
 
 CONST: [0-9]+;

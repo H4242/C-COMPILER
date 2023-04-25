@@ -51,43 +51,38 @@ antlrcpp::Any ASTVisitor::visitSimpledeclaration(ifccParser::SimpledeclarationCo
 
 antlrcpp::Any ASTVisitor::visitArraydeclaration(ifccParser::ArraydeclarationContext *ctx)
 {
+	string type_str = ctx->type->getText();
+	Type type = Type(type_str);
+
 	string var = ctx->VAR()->getText(); // name of the array
 	string var_index = to_string(cfg->get_symbol_table_index()[var]);
 
-	int size = stoi(ctx->CONST()->getText()); // size of the array
+	string size_name = visit(ctx->expr()).as<string>();
+	string size_index = to_string(cfg->get_symbol_table_index()[size_name]);
+
+	string tmpVarSize_name = cfg->create_new_tempvar(Type("int"));
+	cfg->add_const_to_symbol_table(tmpVarSize_name, type.getSize());
+	string tmpVarSize_index = to_string(cfg->get_symbol_table_index()[tmpVarSize_name]);
+
 	// Type type = Type(ctx->type->getText());
 	// TODO gerer le type
 
-	Operation *operation = new ArrayDeclaration(size);
-	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index});
-
+	Operation *operation = new ArrayDeclaration();
+	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, size_index, tmpVarSize_index, to_string(type.getSize())});
 	return 0;
 }
 
 antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	string var = ctx->lvalue()->getText();
+	string var = visit(ctx->lvalue()).as<string>();
 	string var_index = to_string(cfg->get_symbol_table_index()[var]);
-	antlrcpp::Any expr_ctx = ctx->lvalue();
 
-	if (expr_ctx)
-	{
-		// array assignment
-		string rightExpr = visit(ctx->expr()).as<string>();
-		string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
+	// simple assignment
+	string rightExpr = visit(ctx->expr()).as<string>();
+	string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
 
-		Operation *operation = new ArrayStore();
-		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
-	}
-	else
-	{
-		// simple assignment
-		string rightExpr = visit(ctx->expr()).as<string>();
-		string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
-
-		Operation *operation = new Copy();
-		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, rightExpr_index});
-	}
+	Operation *operation = new Copy();
+	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {size_index, tmpVarSize_index, to_string(type.getSize())});
 
 	return 0;
 }
@@ -99,17 +94,22 @@ antlrcpp::Any ASTVisitor::visitVarlvalue(ifccParser::VarlvalueContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitArraylvalue(ifccParser::ArraylvalueContext *ctx)
 {
+	string type_str = ctx->type->getText();
+	Type type = Type(type_str);
+
 	string var = ctx->VAR()->getText();
 	string var_index = to_string(cfg->get_symbol_table_index()[var]);
 
-	string indexExpr = visit(ctx->expr()).as<string>();
-	string indexExpr_index = to_string(cfg->get_symbol_table_index()[indexExpr]);
+	string size_name = visit(ctx->expr()).as<string>();
+	string size_index = to_string(cfg->get_symbol_table_index()[size_name]);
+
+	string indexExpr_name = cfg->create_new_tempvar(Type("int"));
+	cfg->add_const_to_symbol_table(indexExpr_name, type.getSize());
+	string indexExpr_index = to_string(cfg->get_symbol_table_index()[tmpVarSize_name]);
 
 	Operation *operation = new ArrayLoad();
-	Type type = cfg->get_var_type(var);
-	string name = cfg->create_new_tempvar(type);
-	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	cfg->add_to_current_bb(operation, type, {name_index, var_index, indexExpr_index});
+
+	cfg->add_to_current_bb(operation, type, {size_index, var_index, indexExpr_index, to_string(type.getSize())});
 	return name;
 }
 
@@ -123,6 +123,11 @@ antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
 	string const_value = to_string(cfg->get_symbol_table_const()[name]);
 	cfg->add_to_current_bb(operation, type, {name_index, const_value});
 	return name;
+}
+
+antlrcpp::Any ASTVisitor::visitLvalueexpr(ifccParser::LvalueexprContext *ctx)
+{
+	return visit(ctx->lvalue());
 }
 
 antlrcpp::Any ASTVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)

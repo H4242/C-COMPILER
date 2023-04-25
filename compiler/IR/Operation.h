@@ -239,10 +239,6 @@ class ArrayDeclaration : public Operation
 {
 public:
     ArrayDeclaration() : Operation() {}
-    ArrayDeclaration(int size) : Operation()
-    {
-        arraySize = size;
-    }
     void genIR(vector<string> params);
     void gen_x86(vector<string> params, ostream &o);
 
