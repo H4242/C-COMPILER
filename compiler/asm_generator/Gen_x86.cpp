@@ -7,10 +7,14 @@ void Gen_x86::gen_asm(ostream &o)
         gen_asm_prologue(o, cfg);
         for (auto bb : cfg->get_bbs())
         {
-            // o << bb->get_name() << ":\n";
+            o << bb->get_label() << ":\n";
             for (auto instr : bb->get_instrs())
             {
                 instr->getOp()->gen_x86(instr->getParams(), o);
+            }
+            if (bb->get_next_block() != nullptr)
+            {
+                o << "\tjmp\t" << bb->get_next_block()->get_label() << "\n";
             }
         }
         gen_asm_epilogue(o);

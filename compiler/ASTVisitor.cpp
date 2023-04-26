@@ -14,6 +14,9 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 	visitChildren(ctx);
 
+	BasicBlock *last_block = cfg->get_last_bb();
+	cfg->add_bb(last_block);
+
 	return 0;
 }
 
@@ -53,18 +56,6 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	return 0;
 }
 
-antlrcpp::Any ASTVisitor::visitCallexpr(ifccParser::CallexprContext *ctx)
-{
-	string funcName = visit(ctx->callFunction()).as<string>();
-	Type type = functionReturnType[funcName];
-	string returnVar = currentCFG->create_new_tempvar(type, currentFunctionName);
-	Operation *operation = new Rmem();
-	string returnVar_index = to_string(currentCFG->get_symbol_table_index()[returnVar]);
-	currentCFG->add_to_current_bb(operation, type, {"eax", returnVar_index});
-
-	return returnVar;
-}
-
 antlrcpp::Any ASTVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx)
 {
 	string funcName = ctx->VAR()->getText();
@@ -84,19 +75,6 @@ antlrcpp::Any ASTVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx
 	currentCFG->add_to_current_bb(new Call(), Type("void"), {funcName});
 
 	return funcName;
-}
-
-antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
-{
-	if (ctx->expr())
-	{
-		string name = visit(ctx->expr()).as<string>();
-		Type type = currentCFG->get_var_type(name);
-		Operation *operation = new Return_();
-		string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
-		currentCFG->add_to_current_bb(operation, type, {name_index});
-	}
-	return 0;
 }
 
 antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
@@ -145,23 +123,6 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 	currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_index, rightExpr_index});
 
 	return 0;
-}
-
-antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
-{
-	Type type = Type("int");
-	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
-	currentCFG->add_const_to_symbol_table(name, stoi(ctx->CONST()->getText()));
-	Operation *operation = new Ldconst();
-	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
-	string const_value = to_string(currentCFG->get_symbol_table_const()[name]);
-	currentCFG->add_to_current_bb(operation, type, {name_index, const_value});
-	return name;
-}
-
-antlrcpp::Any ASTVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
-{
-	return currentFunctionName + "_" + ctx->VAR()->getText();
 }
 
 antlrcpp::Any ASTVisitor::visitAddsub(ifccParser::AddsubContext *ctx)
@@ -223,6 +184,23 @@ antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 	currentCFG->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
+}
+
+antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
+{
+	Type type = Type("int");
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
+	currentCFG->add_const_to_symbol_table(name, stoi(ctx->CONST()->getText()));
+	Operation *operation = new Ldconst();
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string const_value = to_string(currentCFG->get_symbol_table_const()[name]);
+	currentCFG->add_to_current_bb(operation, type, {name_index, const_value});
+	return name;
+}
+
+antlrcpp::Any ASTVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
+{
+	return currentFunctionName + "_" + ctx->VAR()->getText();
 }
 
 antlrcpp::Any ASTVisitor::visitParexpr(ifccParser::ParexprContext *ctx)
@@ -330,6 +308,113 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	currentCFG->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
+}
+
+antlrcpp::Any ASTVisitor::visitCallexpr(ifccParser::CallexprContext *ctx)
+{
+	string funcName = visit(ctx->callFunction()).as<string>();
+	Type type = functionReturnType[funcName];
+	string returnVar = currentCFG->create_new_tempvar(type, currentFunctionName);
+	Operation *operation = new Rmem();
+	string returnVar_index = to_string(currentCFG->get_symbol_table_index()[returnVar]);
+	currentCFG->add_to_current_bb(operation, type, {"eax", returnVar_index});
+
+	return returnVar;
+}
+
+antlrcpp::Any ASTVisitor::visitStat_block(ifccParser::Stat_blockContext *ctx)
+{
+	visitChildren(ctx);
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+	BasicBlock *test_bb = cfg->get_current_bb();
+	BasicBlock *endif_bb = new BasicBlock(cfg->new_BB_name());
+	auto exprs = ctx->expr();
+	auto stat_blocks = ctx->stat_block();
+	bool elseClause = false;
+	for (int i = 0; i < stat_blocks.size(); i++)
+	{
+		auto stat_block = stat_blocks[i];
+		string expr_name = "";
+		if (i < exprs.size())
+		{
+			auto expr = exprs[i];
+			cfg->set_current_bb(test_bb);
+			expr_name = visit(expr).as<string>();
+		}
+		BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
+		then_bb->set_next_block(endif_bb);
+		cfg->add_bb(then_bb);
+		visit(stat_block);
+
+		cfg->get_current_bb()->set_next_block(endif_bb);
+
+		cfg->set_current_bb(then_bb);
+		if (i < exprs.size())
+		{
+			Operation *operationCmp = new Cmp();
+			string expr_name_index = to_string(cfg->get_symbol_table_index()[expr_name]);
+			test_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
+			Operation *operationJumpEqual = new JumpEqual();
+			test_bb->add_IRInstr(operationJumpEqual, Type("int"), {then_bb->get_label()});
+		}
+		else
+		{
+			test_bb->set_next_block(cfg->get_current_bb());
+			elseClause = true;
+		}
+	}
+	if (!elseClause)
+	{
+		test_bb->set_next_block(endif_bb);
+	}
+	cfg->add_bb(endif_bb);
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+	BasicBlock *test_bb = cfg->get_current_bb();
+	BasicBlock *endwhile_bb = new BasicBlock(cfg->new_BB_name());
+
+	auto expr = ctx->expr();
+	auto stat_block = ctx->stat_block();
+
+	BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
+	cfg->add_bb(then_bb);
+	visit(stat_block);
+
+	cfg->get_current_bb()->set_next_block(endwhile_bb);
+	cfg->set_current_bb(endwhile_bb);
+
+	string expr_name = visit(expr).as<string>();
+	string expr_name_index = to_string(cfg->get_symbol_table_index()[expr_name]);
+	Operation *operationCmp = new Cmp();
+	endwhile_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
+
+	Operation *operationJumpEqual = new JumpEqual();
+	endwhile_bb->add_IRInstr(operationJumpEqual, Type("int"), {then_bb->get_label()});
+
+	test_bb->set_next_block(endwhile_bb);
+	cfg->add_bb(endwhile_bb);
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
+{
+	if (ctx->expr())
+	{
+		string name = visit(ctx->expr()).as<string>();
+		Type type = cfg->get_var_type(name);
+		string name_index = to_string(cfg->get_symbol_table_index()[name]);
+		BasicBlock *last_block = cfg->get_last_bb();
+		Operation *operation = new Return_();
+		cfg->add_to_current_bb(operation, type, {name_index, last_block->get_label()});
+	}
+	return 0;
 }
 
 vector<CFG *> ASTVisitor::getCFGs()

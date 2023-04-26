@@ -42,6 +42,8 @@ public:
     // getters
     vector<BasicBlock *> get_bbs();
     BasicBlock *get_current_bb();
+    BasicBlock *get_last_bb();
+    void set_current_bb(BasicBlock *bb);
     int get_nextFreeSymbolIndex();
 
     string get_name() { return name; }
@@ -59,6 +61,7 @@ protected:
 
     // basic block management
     BasicBlock *current_bb;
+    BasicBlock *last_bb;
 };
 
 #endif
