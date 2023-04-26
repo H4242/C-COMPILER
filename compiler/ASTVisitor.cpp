@@ -51,31 +51,70 @@ antlrcpp::Any ASTVisitor::visitSimpledeclaration(ifccParser::SimpledeclarationCo
 
 antlrcpp::Any ASTVisitor::visitArraydeclaration(ifccParser::ArraydeclarationContext *ctx)
 {
-	string var = ctx->VAR()->getText(); // name of the array
+	int size = ctx->expr().size();
+	if (size == 1)
+	{
+		string var = ctx->VAR()->getText(); // name of the array
 
-	Type var_type = cfg->get_var_type(var);
-	cfg->add_to_symbol_table(var, var_type);
-	string var_index = to_string(cfg->get_symbol_table_index()[var]);
-	string varsize = (var_type.getType() == INT) ? "4" : "1";
+		Type var_type = cfg->get_var_type(var);
+		cfg->add_to_symbol_table(var, var_type);
+		string var_index = to_string(cfg->get_symbol_table_index()[var]);
+		string varsize = (var_type.getType() == INT) ? "4" : "1";
 
-	// visit expr inside the brackets and get the name of the tmp var*
-	string indexexpr_name = visit(ctx->expr()).as<string>();
-	string indexexpr_index = to_string(cfg->get_symbol_table_index()[indexexpr_name]);
+		// visit expr inside the brackets and get the name of the tmp var*
+		string indexexpr_name = visit(ctx->expr(0)).as<string>();
+		string indexexpr_index = to_string(cfg->get_symbol_table_index()[indexexpr_name]);
 
-	// string size_name = visit(ctx->expr()).as<string>();
-	// string size_index = to_string(cfg->get_symbol_table_index()[size_name]);
+		// string size_name = visit(ctx->expr()).as<string>();
+		// string size_index = to_string(cfg->get_symbol_table_index()[size_name]);
 
-	Operation *operation = new ArrayDeclaration();
-	cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, varsize, indexexpr_index});
+		Operation *operation = new ArrayDeclaration();
+		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, varsize, indexexpr_index});
+	}
+	else
+	{
+		antlrcpp::Any lvalue = visit(ctx->lvalue());
+		string var;
+		if (auto varlvalue = dynamic_cast<ifccParser::VarlvalueContext *>(lvalue.as<ifccParser::VarlvalueContext *>()))
+		{
+			var = varlvalue->VAR()->getText();
+		}
+		else if (auto arraylvalue = dynamic_cast<ifccParser::ArraylvalueContext *>(lvalue.as<ifccParser::VarlvalueContext *>()))
+		{
+			var = arraylvalue->VAR()->getText();
+		}
+		else
+		{
+			// handle error
+		}
+
+		string var_index = to_string(cfg->get_symbol_table_index()[var]);
+		Type var_type = cfg->get_var_type(var);
+		int offset = (var_type.getType() == INT) ? 4 : 1;
+		int currOffset = 0;
+
+		for (int i = 0; i < size; i++)
+		{
+			string stroffset = to_string(stoi(var_index) + currOffset);
+
+			string expr = visit(ctx->expr(i)).as<string>();
+			string expr_index = to_string(cfg->get_symbol_table_index()[expr]);
+
+			Operation *operation = new Copy();
+			cfg->add_to_current_bb(operation, cfg->get_var_type(var), {stroffset, expr_index});
+			currOffset -= 4;
+		}
+	}
 	return 0;
 }
 
 antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
+
+	// simple assignment
 	string var = visit(ctx->lvalue()).as<string>();
 	string var_index = to_string(cfg->get_symbol_table_index()[var]);
 
-	// simple assignment
 	string rightExpr = visit(ctx->expr()).as<string>();
 	string rightExpr_index = to_string(cfg->get_symbol_table_index()[rightExpr]);
 

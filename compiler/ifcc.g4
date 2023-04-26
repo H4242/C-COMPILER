@@ -9,7 +9,7 @@ returnstmt: 'return' expr ';';
 
 declaration:
 	type = ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';'	# simpledeclaration
-	| type = ('int' | 'char') VAR '[' expr ']' ';'			# arraydeclaration;
+	| type = ('int' | 'char') VAR '[' expr ']' ('=' '{' expr (',' expr)* '}')? ';'			# arraydeclaration;
 
 bracesassignment:
 	lvalue '=' '{' expr (',' expr)* '}' ';';
