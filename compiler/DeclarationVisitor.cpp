@@ -50,7 +50,12 @@ antlrcpp::Any DeclarationVisitor::visitArraydeclaration(ifccParser::Arraydeclara
 
 antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
+	if (dynamic_cast<ifccParser::ArraylvalueContext *>(ctx->lvalue()) != nullptr)
+	{
+		return 0;
+	}
 	string name = ctx->lvalue()->getText();
+
 	if (usedVariables.find(name) == usedVariables.end())
 	{
 		throw std::logic_error("error: '" + name + "' undeclared");

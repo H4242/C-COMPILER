@@ -52,7 +52,7 @@ antlrcpp::Any ASTVisitor::visitSimpledeclaration(ifccParser::SimpledeclarationCo
 antlrcpp::Any ASTVisitor::visitArraydeclaration(ifccParser::ArraydeclarationContext *ctx)
 {
 	int size = ctx->expr().size();
-	if (size == 1)
+	if (size == 1) // not braces
 	{
 		string var = ctx->VAR()->getText(); // name of the array
 
@@ -71,22 +71,9 @@ antlrcpp::Any ASTVisitor::visitArraydeclaration(ifccParser::ArraydeclarationCont
 		Operation *operation = new ArrayDeclaration();
 		cfg->add_to_current_bb(operation, cfg->get_var_type(var), {var_index, varsize, indexexpr_index});
 	}
-	else
+	else // braces
 	{
-		antlrcpp::Any lvalue = visit(ctx->lvalue());
-		string var;
-		if (auto varlvalue = dynamic_cast<ifccParser::VarlvalueContext *>(lvalue.as<ifccParser::VarlvalueContext *>()))
-		{
-			var = varlvalue->VAR()->getText();
-		}
-		else if (auto arraylvalue = dynamic_cast<ifccParser::ArraylvalueContext *>(lvalue.as<ifccParser::VarlvalueContext *>()))
-		{
-			var = arraylvalue->VAR()->getText();
-		}
-		else
-		{
-			// handle error
-		}
+		string var = ctx->VAR()->getText(); // name of the array
 
 		string var_index = to_string(cfg->get_symbol_table_index()[var]);
 		Type var_type = cfg->get_var_type(var);
@@ -193,7 +180,7 @@ antlrcpp::Any ASTVisitor::visitArraylvalue(ifccParser::ArraylvalueContext *ctx)
 	Operation *operation = new ArrayLoad();
 
 	cfg->add_to_current_bb(operation, var_type, {name_index, sizevartmp_index, var_index, indexexpr_index, to_string(var_type.getSize())});
-	return var;
+	return name;
 }
 
 antlrcpp::Any ASTVisitor::visitConstexpr(ifccParser::ConstexprContext *ctx)
