@@ -2,7 +2,7 @@ grammar ifcc;
 
 axiom: function* prog function*;
 
-block : '{' (assignment | declaration | callFunction)* returnstmt? '}';
+block : '{' (assignment | declaration | callFunction ';' | if_stmt | while_stmt | returnstmt)* returnstmt? '}';
 
 function : retType=('int'|'char'|'void') VAR '(' declParams? ')' ';'	#functiondecl
  		| retType=('int'|'char'|'void') VAR '(' defParams? ')' block 	#functiondef
@@ -35,6 +35,7 @@ stat_block:
 		| if_stmt
 		| while_stmt
 		| returnstmt
+		| callFunction
 	)* '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;

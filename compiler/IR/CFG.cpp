@@ -46,7 +46,7 @@ Type CFG::get_var_type(string name)
 
 string CFG::new_BB_name()
 {
-    string new_name = "bb_" + to_string(nextBBnumber);
+    string new_name = name + "_bb_" + to_string(nextBBnumber);
     nextBBnumber += 1;
     return new_name;
 }
