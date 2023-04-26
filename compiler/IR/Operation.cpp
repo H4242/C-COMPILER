@@ -305,7 +305,8 @@ void Bite_and::gen_x86(vector<string> params, ostream &o)
 
 void Return_::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[0] << "(%rbp), %eax\n";
+    o << "\tmovl\t" << params[0] << "(%rbp), %eax\n"
+      << "\tjmp\t" << params[1] << "\n";
 }
 
 void Cmp::gen_x86(vector<string> params, ostream &o)
