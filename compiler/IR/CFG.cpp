@@ -4,6 +4,7 @@ CFG::CFG(string name_)
 {
     name = name_;
     add_bb(new BasicBlock(new_BB_name()));
+    last_bb = new BasicBlock(new_BB_name());
 }
 
 void CFG::add_bb(BasicBlock *bb)
@@ -88,4 +89,14 @@ vector<BasicBlock *> CFG::get_bbs()
 BasicBlock *CFG::get_current_bb()
 {
     return current_bb;
+}
+
+BasicBlock *CFG::get_last_bb()
+{
+    return last_bb;
+}
+
+void CFG::set_current_bb(BasicBlock *bb)
+{
+    current_bb = bb;
 }

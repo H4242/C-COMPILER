@@ -11,7 +11,8 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 	cfg = new CFG("main");
 
 	visitChildren(ctx);
-
+	BasicBlock *last_block = cfg->get_last_bb();
+	cfg->add_bb(last_block);
 	return 0;
 }
 
@@ -19,9 +20,11 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 {
 	string name = visit(ctx->expr()).as<string>();
 	Type type = cfg->get_var_type(name);
-	Operation *operation = new Return_();
 	string name_index = to_string(cfg->get_symbol_table_index()[name]);
-	cfg->add_to_current_bb(operation, type, {name_index});
+	BasicBlock *last_block = cfg->get_last_bb();
+	Operation *operation = new Return_();
+	cfg->add_to_current_bb(operation, type, {name_index, last_block->get_label()});
+	// cfg->get_current_bb()->set_next_block(last_block);
 	return 0;
 }
 
@@ -246,6 +249,99 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 	cfg->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
 	return name;
+}
+
+antlrcpp::Any ASTVisitor::visitStat_block(ifccParser::Stat_blockContext *ctx)
+{
+	visitChildren(ctx);
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+	BasicBlock *test_bb = cfg->get_current_bb();
+	BasicBlock *endif_bb = new BasicBlock(cfg->new_BB_name());
+	auto exprs = ctx->expr();
+	auto stat_blocks = ctx->stat_block();
+	bool elseClause = false;
+	for (int i = 0; i < stat_blocks.size(); i++)
+	{
+		auto stat_block = stat_blocks[i];
+		string expr_name = "";
+		if (i < exprs.size())
+		{
+			auto expr = exprs[i];
+			cfg->set_current_bb(test_bb);
+			expr_name = visit(expr).as<string>();
+		}
+		BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
+		then_bb->set_next_block(endif_bb);
+		cfg->add_bb(then_bb);
+		visit(stat_block);
+
+		// if (cfg->get_current_bb()->get_next_block() != cfg->get_last_bb())
+		// {
+		cfg->get_current_bb()->set_next_block(endif_bb);
+		// }
+		// else
+		// {
+		// 	then_bb->set_next_block(cfg->get_last_bb());
+		// }
+
+		cfg->set_current_bb(then_bb);
+		if (i < exprs.size())
+		{
+			Operation *operationCmp = new Cmp();
+			string expr_name_index = to_string(cfg->get_symbol_table_index()[expr_name]);
+			test_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
+			Operation *operationJumpEqual = new JumpEqual();
+			test_bb->add_IRInstr(operationJumpEqual, Type("int"), {then_bb->get_label()});
+		}
+		else
+		{
+			test_bb->set_next_block(cfg->get_current_bb());
+			elseClause = true;
+		}
+	}
+	if (!elseClause)
+	{
+		test_bb->set_next_block(endif_bb);
+		// cout << "**************** test_bb" << test_bb->get_label() << "  next " << test_bb->get_next_block()->get_label() << endl;
+	}
+	cfg->add_bb(endif_bb);
+	if (endif_bb->get_next_block() != nullptr)
+	{
+		// cout << "**************** endif_bb" << endif_bb->get_label() << "  next " << endif_bb->get_next_block()->get_label() << endl;
+	}
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+	BasicBlock *test_bb = cfg->get_current_bb();
+	BasicBlock *endwhile_bb = new BasicBlock(cfg->new_BB_name());
+
+	auto expr = ctx->expr();
+	auto stat_block = ctx->stat_block();
+
+	BasicBlock *then_bb = new BasicBlock(cfg->new_BB_name());
+	cfg->add_bb(then_bb);
+	visit(stat_block);
+
+	cfg->get_current_bb()->set_next_block(endwhile_bb);
+	cfg->set_current_bb(endwhile_bb);
+
+	string expr_name = visit(expr).as<string>();
+	string expr_name_index = to_string(cfg->get_symbol_table_index()[expr_name]);
+	Operation *operationCmp = new Cmp();
+	endwhile_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
+
+	Operation *operationJumpEqual = new JumpEqual();
+	endwhile_bb->add_IRInstr(operationJumpEqual, Type("int"), {then_bb->get_label()});
+
+	test_bb->set_next_block(endwhile_bb);
+	cfg->add_bb(endwhile_bb);
+	return 0;
 }
 
 CFG *ASTVisitor::getCFG()

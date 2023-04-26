@@ -16,19 +16,22 @@ class BasicBlock
 public:
   BasicBlock(string entry_label);
   void add_IRInstr(Operation *op, Type t, vector<string> params);
-  void gen_IR(ostream &o); /**< x86 assembly code generation for this basic block (very simple) */
-  void set_exit_true(BasicBlock *bb);
+  void set_next_block(BasicBlock *bb);
+  BasicBlock *get_next_block();
+  // void gen_IR(ostream &o); /**< x86 assembly code generation for this basic block (very simple) */
+  /*void set_exit_true(BasicBlock *bb);
   BasicBlock *get_exit_true();
   void set_exit_false(BasicBlock *bb);
-  BasicBlock *get_exit_false();
+  BasicBlock *get_exit_false();*/
   void set_test_var_name(string name);
   string get_test_var_name();
   string get_label();
   vector<IRInstr *> get_instrs();
 
 protected:
-  BasicBlock *exit_true;    /**< pointer to the next basic block, true branch. If nullptr, return from procedure */
-  BasicBlock *exit_false;   /**< pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump */
+  // BasicBlock *exit_true;    /**< pointer to the next basic block, true branch. If nullptr, return from procedure */
+  // BasicBlock *exit_false;   /**< pointer to the next basic block, false branch. If null_ptr, the basic block ends with an unconditional jump */
+  BasicBlock *next_block = nullptr;
   string label;             /** < the CFG where this block belongs */
   vector<IRInstr *> instrs; /** < the instructions themselves. */
   string test_var_name;     /** < when generating IR code for an if(expr) or while(expr) etc,
