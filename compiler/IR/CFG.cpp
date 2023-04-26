@@ -27,9 +27,9 @@ void CFG::add_to_symbol_table(string name, Type t)
     symbolTableType[name] = t;
 }
 
-string CFG::create_new_tempvar(Type t)
+string CFG::create_new_tempvar(Type t, string funcName)
 {
-    string name = "!tmp" + to_string(nextFreeSymbolIndex);
+    string name = funcName + "_" + "!tmp" + to_string(nextFreeSymbolIndex);
     add_to_symbol_table(name, t);
     return name;
 }
@@ -46,7 +46,7 @@ Type CFG::get_var_type(string name)
 
 string CFG::new_BB_name()
 {
-    string new_name = "bb_" + to_string(nextBBnumber);
+    string new_name = name + "_bb_" + to_string(nextBBnumber);
     nextBBnumber += 1;
     return new_name;
 }
@@ -99,4 +99,9 @@ BasicBlock *CFG::get_last_bb()
 void CFG::set_current_bb(BasicBlock *bb)
 {
     current_bb = bb;
+}
+
+int CFG::get_nextFreeSymbolIndex()
+{
+    return nextFreeSymbolIndex;
 }

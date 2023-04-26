@@ -2,7 +2,7 @@
 ANTLRJAR=../antlr/jar/antlr-4.9.2-complete.jar
 ANTLRINC=../antlr/include
 ANTLRLIB=../antlr/lib/libantlr4-runtime.a
-ANTLRJAR=/usr/share/java/stringtemplate4.jar:/usr/share/java/antlr4.jar:/usr/share/java/antlr4-runtime.jar:/usr/share/java/antlr3-runtime.jar/:/usr/share/java/treelayout.jar 
+ANTLRJAR=/usr/share/java/stringtemplate4.jar:/usr/share/java/antlr4.jar:/usr/share/java/antlr4-runtime.jar:/usr/share/java/antlr3-runtime.jar/:/usr/share/java/treelayout.jar
 ANTLRINC=/usr/include/antlr4-runtime 
 ANTLRLIB=/usr/lib/x86_64-linux-gnu/libantlr4-runtime.a
 
@@ -15,7 +15,7 @@ all: ifcc
 
 ##########################################
 # link together all pieces of our compiler 
-OBJECTS=build/main.o build/ASTVisitor.o build/DeclarationVisitor.o build/CFG.o build/CodeGen.o build/Gen_x86.o build/BasicBlock.o build/IRInstr.o build/Operation.o build/Type.o build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o build/ifccParser.o 
+OBJECTS=build/main.o build/ASTVisitor.o build/DeclarationVisitor.o build/Function.o build/CFG.o build/CodeGen.o build/Gen_x86.o build/BasicBlock.o build/IRInstr.o build/Operation.o build/Type.o build/ifccBaseVisitor.o build/ifccLexer.o build/ifccVisitor.o build/ifccParser.o 
 
 ifcc: $(OBJECTS)
 	@mkdir -p build
@@ -28,6 +28,12 @@ build/%.o: %.cpp generated/ifccParser.cpp
 	$(CC) $(CCFLAGS) -MMD -o $@ $< 
 
 ##########################################
+# compile all the antlr-generated C++
+build/%.o: generated/%.cpp
+	@mkdir -p build
+	$(CC) $(CCFLAGS) -MMD -o $@ $< 
+
+##########################################
 # compile all the asm_generator C++ files
 build/%.o: asm_generator/%.cpp
 	@mkdir -p build
@@ -36,12 +42,6 @@ build/%.o: asm_generator/%.cpp
 ##########################################
 # compile all the IR C++ files
 build/%.o: IR/%.cpp
-	@mkdir -p build
-	$(CC) $(CCFLAGS) -MMD -o $@ $< 
-
-##########################################
-# compile all the antlr-generated C++
-build/%.o: generated/%.cpp
 	@mkdir -p build
 	$(CC) $(CCFLAGS) -MMD -o $@ $< 
 

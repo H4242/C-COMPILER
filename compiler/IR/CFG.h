@@ -28,7 +28,7 @@ public:
 
     // symbol table methods
     void add_to_symbol_table(string name, Type t);
-    string create_new_tempvar(Type t);
+    string create_new_tempvar(Type t, string funcName);
     int get_var_index(string name);
     Type get_var_type(string name);
     bool is_in_symbol_table(string name);
@@ -44,12 +44,9 @@ public:
     BasicBlock *get_current_bb();
     BasicBlock *get_last_bb();
     void set_current_bb(BasicBlock *bb);
+    int get_nextFreeSymbolIndex();
 
-    string
-    get_name()
-    {
-        return name;
-    }
+    string get_name() { return name; }
 
 protected:
     map<string, Type> symbolTableType; /**< part of the symbol table  */

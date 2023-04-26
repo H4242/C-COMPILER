@@ -29,15 +29,23 @@ public:
 	virtual antlrcpp::Any visitBitexpr(ifccParser::BitexprContext *ctx) override;
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
 	// 4.7
-	CFG *getCFG();
-
+	vector<CFG *> getCFGs();
+	// 4.9
+	virtual antlrcpp::Any visitFunctiondef(ifccParser::FunctiondefContext *ctx) override;
+	virtual antlrcpp::Any visitFunctiondecl(ifccParser::FunctiondeclContext *ctx) override;
+	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
+	virtual antlrcpp::Any visitCallexpr(ifccParser::CallexprContext *ctx) override;
 	// 4.11
 	virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
 	virtual antlrcpp::Any visitStat_block(ifccParser::Stat_blockContext *ctx) override;
-
 	// 4.13
 	virtual antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
 
 protected:
-	CFG *cfg;
+	vector<CFG *> cfgs;
+	CFG *currentCFG;
+	vector<string> registers = {"edi", "esi", "edx", "ecx", "e8", "e9"};
+	string currentFunctionName = "";
+
+	unordered_map<string, Type> functionReturnType = {};
 };

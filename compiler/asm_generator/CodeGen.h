@@ -8,14 +8,14 @@
 class CodeGen
 {
 public:
-    CodeGen(CFG *cfg) { this->cfg = cfg; }
+    CodeGen(vector<CFG *> cfgs) { this->cfgs = cfgs; }
     virtual ~CodeGen() {}
     virtual void gen_asm(ostream &o) {}
-    virtual void gen_asm_prologue(ostream &o) {}
+    virtual void gen_asm_prologue(ostream &o, CFG *cfg) {}
     virtual void gen_asm_epilogue(ostream &o) {}
 
 protected:
-    CFG *cfg;
+    vector<CFG *> cfgs;
 };
 
 #endif // CODEGEN_H

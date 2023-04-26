@@ -1,20 +1,25 @@
 grammar ifcc;
 
-axiom: prog;
+axiom: function* prog function*;
 
-prog:
-	'int' 'main' '(' ')' '{' (
-		assignment
-		| declaration
-		| if_stmt
-		| while_stmt
-		| returnstmt
-	)* returnstmt '}';
+block : '{' (assignment | declaration | callFunction ';' | if_stmt | while_stmt | returnstmt)* returnstmt? '}';
 
-returnstmt: 'return' expr ';';
+function : retType=('int'|'char'|'void') VAR '(' declParams? ')' ';'	#functiondecl
+ 		| retType=('int'|'char'|'void') VAR '(' defParams? ')' block 	#functiondef
+		;
 
-declaration:
-	type = ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';';
+declParams : type VAR (',' type VAR)*;
+defParams : type VAR (',' type VAR)*;
+
+callFunction: VAR '(' args? ')';
+
+args: expr (',' expr)*;
+
+prog: 'int' 'main' '(' ')' '{' (assignment | declaration | callFunction ';' | if_stmt | while_stmt | returnstmt)* returnstmt '}';
+
+returnstmt: 'return' expr? ';';
+
+declaration: type VAR (',' VAR)* ('=' expr)? ';';
 
 assignment: VAR '=' expr ';';
 
@@ -30,19 +35,25 @@ stat_block:
 		| if_stmt
 		| while_stmt
 		| returnstmt
+		| callFunction
 	)* '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;
 
 expr:
-	op = ('-' | '!') expr										# unaryexpr
-	| expr op = ('*' | '/') expr								# muldiv
-	| expr op = ('+' | '-') expr								# addsub
-	| expr op = ('<' | '>' | '==' | '!=' | '<=' | '>=') expr	# compexpr
-	| expr op = ('&' | '|' | '^') expr							# bitexpr
-	| CONST														# constexpr
-	| VAR														# varexpr
-	| '(' expr ')'												# parexpr;
+	op=('-' | '!') expr										# unaryexpr
+	|expr op=('*' | '/') expr								# muldiv
+	| expr op=('+' | '-') expr								# addsub
+	| expr op=('<' | '>' | '==' | '!=' | '<=' | '>=') expr	# compexpr
+	| expr op=('&' | '|' | '^') expr						# bitexpr
+	| CONST													# constexpr
+	| VAR													# varexpr
+	| '(' expr ')'											# parexpr
+	| callFunction											# callexpr;
+
+type : 'int' # inttype
+	| 'char' # chartype
+	;
 
 CONST: [0-9]+;
 COMMENT: ('/*' .*? '*/' | '//' .*? '\n') -> skip;
