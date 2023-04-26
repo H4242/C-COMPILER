@@ -17,6 +17,16 @@ antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 	return 0;
 }
 
+antlrcpp::Any ASTVisitor::visitFunctiondecl(ifccParser::FunctiondeclContext *ctx)
+{
+	string funcName = ctx->VAR()->getText();
+	if (functionReturnType.find(funcName) == functionReturnType.end())
+	{
+		functionReturnType[funcName] = Type(ctx->retType->getText());
+	}
+
+	return 0;
+}
 antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 {
 	string funcName = ctx->VAR()->getText();
@@ -25,26 +35,20 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 
 	currentFunctionName = funcName;
 
-	int size = ctx->defParams()->VAR().size();
-	if (size > 6)
-	{
-		throw std::logic_error("error: function '" + funcName + "' can't have more than 6 arguments");
-	}
-
 	Operation *operation = new Rmem();
+	int size = ctx->defParams()->VAR().size();
 	for (int i = 0; i < size; i++)
 	{
 		string varName = funcName + "_" + ctx->defParams()->VAR(i)->getText();
 		currentCFG->add_to_symbol_table(varName, Type(ctx->defParams()->type(i)->getText()));
 		currentCFG->add_to_current_bb(operation, Type("void"), {registers[i], to_string(currentCFG->get_symbol_table_index()[varName])});
 	}
-
-	if (ctx->retType->getText() != "void")
-	{
-		currentCFG->add_to_symbol_table(funcName, Type(ctx->retType->getText()));
-	}
-
 	visitChildren(ctx);
+
+	if (functionReturnType.find(funcName) == functionReturnType.end())
+	{
+		functionReturnType[funcName] = Type(ctx->retType->getText());
+	}
 
 	return 0;
 }
@@ -52,11 +56,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 antlrcpp::Any ASTVisitor::visitCallexpr(ifccParser::CallexprContext *ctx)
 {
 	string funcName = visit(ctx->callFunction()).as<string>();
-	if (currentCFG->get_symbol_table_type().find(funcName) == currentCFG->get_symbol_table_type().end())
-	{
-		throw std::logic_error("error: function '" + funcName + "' is of type void");
-	}
-	Type type = currentCFG->get_var_type(funcName);
+	Type type = functionReturnType[funcName];
 	string returnVar = currentCFG->create_new_tempvar(type, currentFunctionName);
 	Operation *operation = new Rmem();
 	string returnVar_index = to_string(currentCFG->get_symbol_table_index()[returnVar]);
@@ -115,6 +115,11 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 
 		string rightExpr = visit(ctx->expr()).as<string>();
 		string rightExpr_index = to_string(currentCFG->get_symbol_table_index()[rightExpr]);
+
+		if (currentCFG->get_var_type(var) != currentCFG->get_var_type(rightExpr))
+		{
+			throw std::logic_error("error: type mismatch");
+		}
 
 		Operation *operation = new Copy();
 		currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_index, rightExpr_index});

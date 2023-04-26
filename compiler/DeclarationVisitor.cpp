@@ -77,6 +77,12 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 	}
 	currentFunctionName = funcName;
 
+	int size = ctx->defParams()->VAR().size();
+	if (size > 6)
+	{
+		throw std::logic_error("error: function '" + funcName + "' can't have more than 6 arguments");
+	}
+
 	Function func;
 	func.name = funcName;
 	func.returnType = ctx->retType->getText();

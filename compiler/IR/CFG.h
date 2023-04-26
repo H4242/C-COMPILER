@@ -44,11 +44,7 @@ public:
     BasicBlock *get_current_bb();
     int get_nextFreeSymbolIndex();
 
-    string
-    get_name()
-    {
-        return name;
-    }
+    string get_name() { return name; }
 
 protected:
     map<string, Type> symbolTableType; /**< part of the symbol table  */

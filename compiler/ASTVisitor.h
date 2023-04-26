@@ -32,6 +32,7 @@ public:
 	vector<CFG *> getCFGs();
 	// 4.9
 	virtual antlrcpp::Any visitFunctiondef(ifccParser::FunctiondefContext *ctx) override;
+	virtual antlrcpp::Any visitFunctiondecl(ifccParser::FunctiondeclContext *ctx) override;
 	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
 	virtual antlrcpp::Any visitCallexpr(ifccParser::CallexprContext *ctx) override;
 
@@ -40,4 +41,6 @@ protected:
 	CFG *currentCFG;
 	vector<string> registers = {"edi", "esi", "edx", "ecx", "e8", "e9"};
 	string currentFunctionName = "";
+
+	unordered_map<string, Type> functionReturnType = {};
 };
