@@ -3,21 +3,22 @@ grammar ifcc;
 axiom: prog;
 
 prog:
-	'int' 'main' '(' ')' '{' (assignment | declaration)* returnstmt '}';
+	'int' 'main' '(' ')' '{' (bracesassignment | assignment | declaration)* returnstmt '}';
 
 returnstmt: 'return' expr ';';
 
 declaration:
-	//type = ('int' | 'char') VAR '*' ';'							# pointerdeclaration
-	type = ('int' | 'char') VAR '[' expr ']' ';'				# arraydeclaration
-	| type = ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';'	# simpledeclaration;
+	type = ('int' | 'char') VAR (',' VAR)* ('=' expr)? ';'	# simpledeclaration
+	| type = ('int' | 'char') VAR '[' expr ']' ';'			# arraydeclaration;
+
+bracesassignment:
+	lvalue '=' '{' expr (',' expr)* '}' ';';
 
 assignment: lvalue '=' expr ';';
 
 lvalue:
-	VAR '[' expr ']' # arraylvalue
-	//| '*' VAR			# ptrlvalue
-	| VAR # varlvalue;
+	VAR # varlvalue
+	| VAR '[' expr ']' # arraylvalue;
 
 expr:
 	lvalue										# lvalueexpr

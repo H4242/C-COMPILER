@@ -1,6 +1,5 @@
 int main()
 {
-    int a[10];
-    a[1] = 5;
-    return a[1];
+    int a[3] = {1, 2, 3};
+    return 0;
 }

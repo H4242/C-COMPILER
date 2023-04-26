@@ -35,6 +35,7 @@ public:
 	virtual antlrcpp::Any visitBitexpr(ifccParser::BitexprContext *ctx) override;
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
 	virtual antlrcpp::Any visitLvalueexpr(ifccParser::LvalueexprContext *ctx) override;
+	virtual antlrcpp::Any visitBracesassignment(ifccParser::BracesassignmentContext *ctx) override;
 	// 4.7
 	CFG *getCFG();
 

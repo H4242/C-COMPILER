@@ -25,6 +25,7 @@ void Gen_x86::gen_asm_prologue(ostream &o)
 
 void Gen_x86::gen_asm_epilogue(ostream &o)
 {
-    o << "\tpopq\t%rbp\n"
+    o << "\tmovq\t%rbp, %rsp\n"
+      << "\tpopq\t%rbp\n"
       << "\tret\n";
 }
