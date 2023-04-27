@@ -4,8 +4,8 @@ axiom: function* prog function*;
 
 block : '{' (assignment | declaration | callFunction ';' | if_stmt | while_stmt | returnstmt)* returnstmt? '}';
 
-function : retType=('int'|'char'|'void') VAR '(' declParams? ')' ';'	#functiondecl
- 		| retType=('int'|'char'|'void') VAR '(' defParams? ')' block 	#functiondef
+function : type VAR '(' declParams? ')' ';'		#functiondecl
+ 		| type VAR '(' defParams? ')' block 	#functiondef
 		;
 
 declParams : type VAR (',' type VAR)*;
@@ -48,15 +48,18 @@ expr:
 	| expr op=('&' | '|' | '^') expr						# bitexpr
 	| CONST													# constexpr
 	| VAR													# varexpr
+	| CHAR													# charexpr
 	| '(' expr ')'											# parexpr
 	| callFunction											# callexpr;
 
-type : 'int' # inttype
-	| 'char' # chartype
+type : 'void' 	# voidtype
+	|'int' 		# inttype
+	|'char' 	# chartype
 	;
 
+CHAR: '\'' . '\'';
 CONST: [0-9]+;
+VAR: ([a-zA-Z_][a-zA-Z0-9_]*);
 COMMENT: ('/*' .*? '*/' | '//' .*? '\n') -> skip;
 DIRECTIVE: '#' .*? '\n' -> skip;
 WS: [ \t\r\n] -> channel(HIDDEN);
-VAR: ([a-zA-Z_][a-zA-Z0-9_]*);

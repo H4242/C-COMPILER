@@ -50,7 +50,7 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondecl(ifccParser::FunctiondeclCont
 
 	Function func;
 	func.name = funcName;
-	func.returnType = ctx->retType->getText();
+	func.returnType = ctx->type()->getText();
 	func.paramsCount = ctx->declParams()->type().size();
 	for (int i = 0; i < func.paramsCount; i++)
 	{
@@ -85,7 +85,7 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 
 	Function func;
 	func.name = funcName;
-	func.returnType = ctx->retType->getText();
+	func.returnType = ctx->type()->getText();
 	func.paramsCount = ctx->defParams()->type().size();
 	for (int i = 0; i < func.paramsCount; i++)
 	{

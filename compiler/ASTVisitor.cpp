@@ -25,7 +25,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondecl(ifccParser::FunctiondeclContext *ctx
 	string funcName = ctx->VAR()->getText();
 	if (functionReturnType.find(funcName) == functionReturnType.end())
 	{
-		functionReturnType[funcName] = Type(ctx->retType->getText());
+		functionReturnType[funcName] = Type(ctx->type()->getText());
 	}
 
 	return 0;
@@ -38,6 +38,11 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 
 	currentFunctionName = funcName;
 
+	if (functionReturnType.find(funcName) == functionReturnType.end())
+	{
+		functionReturnType[funcName] = Type(ctx->type()->getText());
+	}
+
 	Operation *operation = new Rmem();
 	int size = ctx->defParams()->VAR().size();
 	for (int i = 0; i < size; i++)
@@ -48,10 +53,6 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	}
 	visitChildren(ctx);
 
-	if (functionReturnType.find(funcName) == functionReturnType.end())
-	{
-		functionReturnType[funcName] = Type(ctx->retType->getText());
-	}
 	BasicBlock *last_block = currentCFG->get_last_bb();
 	currentCFG->add_bb(last_block);
 	return 0;
@@ -95,13 +96,11 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 		string rightExpr = visit(ctx->expr()).as<string>();
 		string rightExpr_index = to_string(currentCFG->get_symbol_table_index()[rightExpr]);
 
-		if (currentCFG->get_var_type(var) != currentCFG->get_var_type(rightExpr))
-		{
-			throw std::logic_error("error: type mismatch");
-		}
+		string var_type = currentCFG->get_var_type(var).getType();
+		string rightExpr_type = currentCFG->get_var_type(rightExpr).getType();
 
 		Operation *operation = new Copy();
-		currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_index, rightExpr_index});
+		currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_type, var_index, rightExpr_type, rightExpr_index});
 	}
 
 	return 0;
@@ -115,13 +114,11 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 	string rightExpr = visit(ctx->expr()).as<string>();
 	string rightExpr_index = to_string(currentCFG->get_symbol_table_index()[rightExpr]);
 
-	if (currentCFG->get_var_type(var) != currentCFG->get_var_type(rightExpr))
-	{
-		throw std::logic_error("error: type mismatch");
-	}
+	string var_type = currentCFG->get_var_type(var).getType();
+	string rightExpr_type = currentCFG->get_var_type(rightExpr).getType();
 
 	Operation *operation = new Copy();
-	currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_index, rightExpr_index});
+	currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_type, var_index, rightExpr_type, rightExpr_index});
 
 	return 0;
 }
@@ -184,6 +181,18 @@ antlrcpp::Any ASTVisitor::visitMuldiv(ifccParser::MuldivContext *ctx)
 
 	currentCFG->add_to_current_bb(operation, type, {name_index, left_index, right_index});
 
+	return name;
+}
+
+antlrcpp::Any ASTVisitor::visitCharexpr(ifccParser::CharexprContext *ctx)
+{
+	Type type = Type("char");
+	string name = currentCFG->create_new_tempvar(type, currentFunctionName);
+	currentCFG->add_const_to_symbol_table(name, ctx->CHAR()->getText()[1]);
+	Operation *operation = new Ldconst();
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	string const_value = to_string(currentCFG->get_symbol_table_const()[name]);
+	currentCFG->add_to_current_bb(operation, type, {name_index, const_value, type.getType()});
 	return name;
 }
 
@@ -413,7 +422,7 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 		string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
 		BasicBlock *last_block = currentCFG->get_last_bb();
 		Operation *operation = new Return_();
-		currentCFG->add_to_current_bb(operation, type, {name_index, last_block->get_label()});
+		currentCFG->add_to_current_bb(operation, type, {name_index, last_block->get_label(), type.getType()});
 	}
 	return 0;
 }

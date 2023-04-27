@@ -186,14 +186,49 @@ void Div::gen_x86(vector<string> params, ostream &o)
 
 void Ldconst::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t$" << params[1] << ", " << params[0] << "(%rbp)" << endl;
+    if (params[2] == "int")
+    {
+        o << "\tmovl\t$";
+    }
+    else if (params[2] == "char")
+    {
+        o << "\tmovb\t$";
+    }
+    o << params[1] << ", " << params[0] << "(%rbp)" << endl;
 }
 
 void Copy::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[1] << "(%rbp)"
-      << ", %eax\n"
-      << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
+    if (params[2] == "int")
+    {
+        o << "\tmovl\t" << params[3] << "(%rbp)"
+          << ", %eax\n";
+    }
+    else if (params[2] == "char")
+    {
+        o << "\tmovb\t" << params[3] << "(%rbp)"
+          << ", %al\n";
+    }
+
+    if (params[0] == "int")
+    {
+        if (params[2] == "char")
+        {
+            o << "\tmovsbl\t%al, %eax" << endl;
+        }
+        o << "\tmovl\t%eax, " << params[1] << "(%rbp)" << endl;
+    }
+    else if (params[0] == "char")
+    {
+        if (params[2] == "int")
+        {
+            o << "\tcltd\n"
+              << "\tidivl\t $256\n"
+              << "\tmovl\t%edx, %eax\n"
+              << "\tmovsb\t%eax, %al\n";
+        }
+        o << "\tmovb\t%al, " << params[1] << "(%rbp)" << endl;
+    }
 }
 
 void Rmem::gen_x86(vector<string> params, ostream &o)
