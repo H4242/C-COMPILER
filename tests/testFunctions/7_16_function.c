@@ -1,20 +1,18 @@
-int syracuse(int n)
+int fonc(int n)
 {
-    while (n != 1)
+    int a = 0;
     {
-        if (n % 2 == 0)
-        {
-            n = n / 2;
-        }
-        else
-        {
-            n = 3 * n + 1;
-        }
+        int b = a;
+        a = n;
+        a = a + b;
     }
-    return 1;
+    return a;
 }
 
 int main()
 {
-    return syracuse(10);
+    {
+        int z = 0;
+    }
+    return fonc(10);
 }

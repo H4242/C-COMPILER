@@ -10,6 +10,7 @@ block:
 		| if_stmt
 		| while_stmt
 		| returnstmt
+		| stat_block
 	)* returnstmt? '}';
 
 function:
@@ -31,6 +32,7 @@ prog:
 		| if_stmt
 		| while_stmt
 		| returnstmt
+		| stat_block
 	)* returnstmt '}';
 
 returnstmt: 'return' expr? ';';
@@ -52,6 +54,7 @@ stat_block:
 		| while_stmt
 		| returnstmt
 		| callFunction
+		| stat_block
 	)* '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;
