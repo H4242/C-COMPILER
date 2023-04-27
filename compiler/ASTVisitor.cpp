@@ -41,7 +41,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	currentFunctionName = funcName;
 	if (functionReturnType.find(funcName) == functionReturnType.end())
 	{
-		functionReturnType[funcName] = Type(ctx->retType->getText());
+		functionReturnType[funcName] = Type(ctx->type()->getText());
 	}
 
 	Operation *operation = new Rmem();
@@ -51,7 +51,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 		functionReturnType[funcName] = Type(ctx->type()->getText());
 	}
 
-	Operation *operation = new Rmem();
+	operation = new Rmem();
 	if (ctx->defParams())
 	{
 		int size = ctx->defParams()->VAR().size();
