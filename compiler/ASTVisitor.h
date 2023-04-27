@@ -44,7 +44,7 @@ public:
 protected:
 	vector<CFG *> cfgs;
 	CFG *currentCFG;
-	vector<string> registers = {"edi", "esi", "edx", "ecx", "e8", "e9"};
+	vector<string> registers = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 	string currentFunctionName = "";
 
 	unordered_map<string, Type> functionReturnType = {};

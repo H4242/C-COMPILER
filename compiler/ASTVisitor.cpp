@@ -37,7 +37,11 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	cfgs.push_back(currentCFG);
 
 	currentFunctionName = funcName;
-
+	if (functionReturnType.find(funcName) == functionReturnType.end())
+	{
+		functionReturnType[funcName] = Type(ctx->retType->getText());
+	}
+	
 	Operation *operation = new Rmem();
 	int size = ctx->defParams()->VAR().size();
 	for (int i = 0; i < size; i++)
@@ -48,10 +52,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	}
 	visitChildren(ctx);
 
-	if (functionReturnType.find(funcName) == functionReturnType.end())
-	{
-		functionReturnType[funcName] = Type(ctx->retType->getText());
-	}
+	
 	BasicBlock *last_block = currentCFG->get_last_bb();
 	currentCFG->add_bb(last_block);
 	return 0;
