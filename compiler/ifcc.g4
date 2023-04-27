@@ -2,20 +2,38 @@ grammar ifcc;
 
 axiom: function* prog function*;
 
-block : '{' (assignment | declaration | callFunction ';' | if_stmt | while_stmt | returnstmt)* returnstmt? '}';
+block:
+	'{' (
+		assignment
+		| declaration
+		| callFunction ';'
+		| if_stmt
+		| while_stmt
+		| returnstmt
+		| stat_block
+	)* returnstmt? '}';
 
-function : retType=('int'|'char'|'void') VAR '(' declParams? ')' ';'	#functiondecl
- 		| retType=('int'|'char'|'void') VAR '(' defParams? ')' block 	#functiondef
-		;
+function:
+	retType = ('int' | 'char' | 'void') VAR '(' declParams? ')' ';'		# functiondecl
+	| retType = ('int' | 'char' | 'void') VAR '(' defParams? ')' block	# functiondef;
 
-declParams : type VAR (',' type VAR)*;
-defParams : type VAR (',' type VAR)*;
+declParams: type VAR (',' type VAR)*;
+defParams: type VAR (',' type VAR)*;
 
 callFunction: VAR '(' args? ')';
 
 args: expr (',' expr)*;
 
-prog: 'int' 'main' '(' ')' '{' (assignment | declaration | callFunction ';' | if_stmt | while_stmt | returnstmt)* returnstmt '}';
+prog:
+	'int' 'main' '(' ')' '{' (
+		assignment
+		| declaration
+		| callFunction ';'
+		| if_stmt
+		| while_stmt
+		| returnstmt
+		| stat_block
+	)* returnstmt '}';
 
 returnstmt: 'return' expr? ';';
 
@@ -36,24 +54,23 @@ stat_block:
 		| while_stmt
 		| returnstmt
 		| callFunction
+		| stat_block
 	)* '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;
 
 expr:
-	op=('-' | '!') expr										# unaryexpr
-	|expr op=('*' | '/') expr								# muldiv
-	| expr op=('+' | '-') expr								# addsub
-	| expr op=('<' | '>' | '==' | '!=' | '<=' | '>=') expr	# compexpr
-	| expr op=('&' | '|' | '^') expr						# bitexpr
-	| CONST													# constexpr
-	| VAR													# varexpr
-	| '(' expr ')'											# parexpr
-	| callFunction											# callexpr;
+	op = ('-' | '!') expr										# unaryexpr
+	| expr op = ('*' | '/' | '%') expr							# muldiv
+	| expr op = ('+' | '-') expr								# addsub
+	| expr op = ('<' | '>' | '==' | '!=' | '<=' | '>=') expr	# compexpr
+	| expr op = ('&' | '|' | '^') expr							# bitexpr
+	| CONST														# constexpr
+	| VAR														# varexpr
+	| '(' expr ')'												# parexpr
+	| callFunction												# callexpr;
 
-type : 'int' # inttype
-	| 'char' # chartype
-	;
+type: 'int' # inttype | 'char' # chartype;
 
 CONST: [0-9]+;
 COMMENT: ('/*' .*? '*/' | '//' .*? '\n') -> skip;
