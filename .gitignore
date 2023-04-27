@@ -1,0 +1,10 @@
+**/ifcc-test-output
+**/antlr
+**/.antlr
+**/.vscode
+**/build
+**/generated
+*.o
+*.out
+*.s
+**ifcc

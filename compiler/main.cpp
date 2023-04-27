@@ -7,8 +7,10 @@
 #include "generated/ifccLexer.h"
 #include "generated/ifccParser.h"
 #include "generated/ifccBaseVisitor.h"
+#include "asm_generator/Gen_x86.h"
 
-#include "CodeGenVisitor.h"
+#include "ASTVisitor.h"
+#include "DeclarationVisitor.h"
 
 using namespace antlr4;
 using namespace std;
@@ -16,17 +18,17 @@ using namespace std;
 int main(int argn, const char **argv)
 {
   stringstream in;
-  if (argn==2)
+  if (argn == 2)
   {
-     ifstream lecture(argv[1]);
-     in << lecture.rdbuf();
+    ifstream lecture(argv[1]);
+    in << lecture.rdbuf();
   }
   else
   {
-      cerr << "usage: ifcc path/to/file.c" << endl ;
-      exit(1);
+    cerr << "usage: ifcc path/to/file.c" << endl;
+    exit(1);
   }
-  
+
   ANTLRInputStream input(in.str());
 
   ifccLexer lexer(&input);
@@ -35,17 +37,31 @@ int main(int argn, const char **argv)
   tokens.fill();
 
   ifccParser parser(&tokens);
-  tree::ParseTree* tree = parser.axiom();
+  tree::ParseTree *tree = parser.axiom();
 
-  if(parser.getNumberOfSyntaxErrors() != 0)
+  if (parser.getNumberOfSyntaxErrors() != 0)
   {
-      cerr << "error: syntax error during parsing" << endl;
-      exit(1);
+    cerr << "error: syntax error during parsing" << endl;
+    exit(1);
   }
 
-  
-  CodeGenVisitor v;
+  // use another visitor declarationVisitor
+  /*
+  use hashmap <string, long> = <variableName, offsetInStack>
+  if newDeclaration in hashmap => error (even if different type)
+  */
+
+  // create symbolTable for the scope
+
+  DeclarationVisitor d;
+  d.visit(tree);
+
+  ASTVisitor v;
   v.visit(tree);
+
+  CodeGen *codegen = new Gen_x86(v.getCFGs());
+
+  codegen->gen_asm(std::cout);
 
   return 0;
 }
