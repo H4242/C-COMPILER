@@ -26,7 +26,6 @@ antlrcpp::Any DeclarationVisitor::visitAxiom(ifccParser::AxiomContext *ctx)
 			cerr << "warning: variable '" << var.first << "' declared but not used\n";
 		}
 	}
-
 	return 0;
 }
 
@@ -63,11 +62,14 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondecl(ifccParser::FunctiondeclCont
 
 	Function func;
 	func.name = funcName;
-	func.returnType = ctx->retType->getText();
-	func.paramsCount = ctx->declParams()->type().size();
-	for (int i = 0; i < func.paramsCount; i++)
+	func.returnType = ctx->type()->getText();
+	if (ctx->declParams())
 	{
-		func.paramsTypes.push_back(ctx->declParams()->type(i)->getText());
+		func.paramsCount = ctx->declParams()->type().size();
+		for (int i = 0; i < func.paramsCount; i++)
+		{
+			func.paramsTypes.push_back(ctx->declParams()->type(i)->getText());
+		}
 	}
 	declaredFunctions[funcName] = func;
 
@@ -75,9 +77,7 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondecl(ifccParser::FunctiondeclCont
 	{
 		throw std::logic_error("error: conflicting function signature for '" + funcName + "'");
 	}
-
 	visitChildren(ctx);
-
 	return 0;
 }
 
@@ -89,29 +89,41 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 		throw std::logic_error("error: redefinition of '" + funcName + "'");
 	}
 	currentFunctionName = funcName;
-
-	int size = ctx->defParams()->VAR().size();
-	if (size > 6)
+	if (ctx->defParams())
 	{
-		throw std::logic_error("error: function '" + funcName + "' can't have more than 6 arguments");
+		int size = ctx->defParams()->VAR().size();
+		if (size > 6)
+		{
+			throw std::logic_error("error: function '" + funcName + "' can't have more than 6 arguments");
+		}
 	}
-
 	Function func;
 	func.name = funcName;
-	func.returnType = ctx->retType->getText();
-	func.paramsCount = ctx->defParams()->type().size();
-	for (int i = 0; i < func.paramsCount; i++)
+	func.returnType = ctx->type()->getText();
+	if (ctx->defParams())
 	{
-		func.paramsTypes.push_back(ctx->defParams()->type(i)->getText());
+		func.paramsCount = ctx->defParams()->type().size();
+		for (int i = 0; i < func.paramsCount; i++)
+		{
+			func.paramsTypes.push_back(ctx->defParams()->type(i)->getText());
+		}
 	}
 	definedFunctions[funcName] = func;
-
 	if (declaredFunctions.find(funcName) != declaredFunctions.end() && declaredFunctions[funcName] != func)
 	{
 		throw std::logic_error("error: conflicting function signature for '" + funcName + "'");
 	}
+
 	blockNameStack.push(currentFunctionName);
-	visitChildren(ctx);
+
+	if (ctx->defParams())
+	{
+		visitChildren(ctx);
+	}
+	else
+	{
+		visit(ctx->block());
+	}
 
 	auto it = usedVariables.begin();
 	while (it != usedVariables.end())
@@ -126,6 +138,7 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 		}
 	}
 	blockNameStack.pop();
+
 	return 0;
 }
 
@@ -162,7 +175,6 @@ antlrcpp::Any DeclarationVisitor::visitDefParams(ifccParser::DefParamsContext *c
 antlrcpp::Any DeclarationVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx)
 {
 	string funcName = ctx->VAR()->getText();
-
 	if (definedFunctions.find(funcName) == definedFunctions.end() && declaredFunctions.find(funcName) == declaredFunctions.end())
 	{
 		throw std::logic_error("error: '" + funcName + "' was not declared or defined before use");
@@ -170,11 +182,13 @@ antlrcpp::Any DeclarationVisitor::visitCallFunction(ifccParser::CallFunctionCont
 
 	Function func;
 	func.name = funcName;
-	func.paramsCount = ctx->args()->expr().size();
+	if (ctx->args())
+	{
+		func.paramsCount = ctx->args()->expr().size();
+	}
 	calledFunctions.push_back(func);
 
 	visitChildren(ctx);
-
 	return 0;
 }
 
@@ -194,7 +208,6 @@ antlrcpp::Any DeclarationVisitor::visitDeclaration(ifccParser::DeclarationContex
 	{
 		visit(ctx->expr());
 	}
-
 	return 0;
 }
 
@@ -218,7 +231,6 @@ antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext 
 	}
 	usedVariables[varName] = true;
 	visit(ctx->expr());
-
 	return 0;
 }
 
@@ -241,7 +253,6 @@ antlrcpp::Any DeclarationVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 		throw std::logic_error("error: '" + varName + "' undeclared");
 	}
 	usedVariables[varName] = true;
-
 	return varName;
 }
 

@@ -30,6 +30,8 @@ public:
 	virtual antlrcpp::Any visitCompexpr(ifccParser::CompexprContext *ctx) override;
 	// 4.7
 	vector<CFG *> getCFGs();
+	// 4.8
+	virtual antlrcpp::Any visitCharexpr(ifccParser::CharexprContext *ctx) override;
 	// 4.9
 	virtual antlrcpp::Any visitFunctiondef(ifccParser::FunctiondefContext *ctx) override;
 	virtual antlrcpp::Any visitFunctiondecl(ifccParser::FunctiondeclContext *ctx) override;
