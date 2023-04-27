@@ -45,16 +45,14 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	}
 
 	Operation *operation = new Rmem();
-	int size = ctx->defParams()->VAR().size();
-	for (int i = 0; i < size; i++)
-	{
-		functionReturnType[funcName] = Type(ctx->type()->getText());
-	}
-
-	operation = new Rmem();
 	if (ctx->defParams())
 	{
 		int size = ctx->defParams()->VAR().size();
+		for (int i = 0; i < size; i++)
+		{
+			functionReturnType[funcName] = Type(ctx->type()->getText());
+		}
+		operation = new Rmem();
 		for (int i = 0; i < size; i++)
 		{
 			string varName = funcName + "_" + ctx->defParams()->VAR(i)->getText();
