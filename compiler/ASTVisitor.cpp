@@ -7,7 +7,6 @@ using namespace std;
 
 antlrcpp::Any ASTVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-	cerr << "visitProg" << endl;
 	currentCFG = new CFG("main");
 	cfgs.push_back(currentCFG);
 
@@ -33,7 +32,6 @@ antlrcpp::Any ASTVisitor::visitFunctiondecl(ifccParser::FunctiondeclContext *ctx
 }
 antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 {
-	cerr << "visitFunctiondef" << endl;
 	string funcName = ctx->VAR()->getText();
 	currentCFG = new CFG(funcName);
 	cfgs.push_back(currentCFG);
@@ -68,7 +66,6 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx)
 {
-	cerr << "visitCallFunction" << endl;
 	string funcName = ctx->VAR()->getText();
 	if (ctx->args())
 	{
@@ -91,7 +88,6 @@ antlrcpp::Any ASTVisitor::visitCallFunction(ifccParser::CallFunctionContext *ctx
 
 antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 {
-	cerr << "visitDeclaration" << endl;
 	int size = ctx->VAR().size();
 	Type type = Type(ctx->type()->getText());
 
@@ -110,12 +106,10 @@ antlrcpp::Any ASTVisitor::visitDeclaration(ifccParser::DeclarationContext *ctx)
 		string var_type = currentCFG->get_var_type(var).getType();
 		string rightExpr_type = currentCFG->get_var_type(rightExpr).getType();
 
-		cerr << "var: " << var << endl;
-		cerr << "var_index: " << var_index << endl;
-		cerr << "rightExpr: " << rightExpr << endl;
-		cerr << "rightExpr_index: " << rightExpr_index << endl;
-		cerr << "var_type: " << var_type << endl;
-		cerr << "rightExpr_type: " << rightExpr_type << endl;
+		if (rightExpr_type == "void")
+		{
+			throw std::logic_error("error: void type can't be assigned to a variable");
+		}
 
 		Operation *operation = new Copy();
 		currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_type, var_index, rightExpr_type, rightExpr_index});
@@ -134,6 +128,11 @@ antlrcpp::Any ASTVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 
 	string var_type = currentCFG->get_var_type(var).getType();
 	string rightExpr_type = currentCFG->get_var_type(rightExpr).getType();
+
+	if (rightExpr_type == "void")
+	{
+		throw std::logic_error("error: void type can't be assigned to a variable");
+	}
 
 	Operation *operation = new Copy();
 	currentCFG->add_to_current_bb(operation, currentCFG->get_var_type(var), {var_type, var_index, rightExpr_type, rightExpr_index});
@@ -340,7 +339,6 @@ antlrcpp::Any ASTVisitor::visitCompexpr(ifccParser::CompexprContext *ctx)
 
 antlrcpp::Any ASTVisitor::visitCallexpr(ifccParser::CallexprContext *ctx)
 {
-	cerr << "visitCallexpr" << endl;
 	string funcName = visit(ctx->callFunction()).as<string>();
 	Type type = functionReturnType[funcName];
 	string returnVar = currentCFG->create_new_tempvar(type, currentFunctionName);
