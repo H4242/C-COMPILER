@@ -63,12 +63,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 		}
 	}
 	visitChildren(ctx);
-
-<<<<<<< HEAD
-	== == == =
-	
->>>>>>> dev
-				 BasicBlock *last_block = currentCFG->get_last_bb();
+	BasicBlock *last_block = currentCFG->get_last_bb();
 	currentCFG->add_bb(last_block);
 	return 0;
 }

@@ -113,7 +113,8 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 	{
 		throw std::logic_error("error: conflicting function signature for '" + funcName + "'");
 	}
-<<<<<<< HEAD
+
+	blockNameStack.push(currentFunctionName);
 
 	if (ctx->defParams())
 	{
@@ -123,9 +124,6 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 	{
 		visit(ctx->block());
 	}
-	== == == =
-				 blockNameStack.push(currentFunctionName);
-	visitChildren(ctx);
 
 	auto it = usedVariables.begin();
 	while (it != usedVariables.end())
@@ -140,7 +138,7 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 		}
 	}
 	blockNameStack.pop();
->>>>>>> dev
+
 	return 0;
 }
 
