@@ -214,7 +214,7 @@ void Copy::gen_x86(vector<string> params, ostream &o)
     {
         if (params[2] == "char")
         {
-            o << "\tmovsbl\t%al, %eax" << endl;
+            o << "\tmovzbl\t%al, %eax" << endl;
         }
         o << "\tmovl\t%eax, " << params[1] << "(%rbp)" << endl;
     }
@@ -222,10 +222,10 @@ void Copy::gen_x86(vector<string> params, ostream &o)
     {
         if (params[2] == "int")
         {
-            o << "\tcltd\n"
-              << "\tidivl\t $256\n"
-              << "\tmovl\t%edx, %eax\n"
-              << "\tmovsb\t%eax, %al\n";
+            o << "\tmovl\t$256, %ebx\n"
+              << "\tcltd\n"
+              << "\tidivl\t%ebx\n"
+              << "\tmovl\t%edx, %eax\n";
         }
         o << "\tmovb\t%al, " << params[1] << "(%rbp)" << endl;
     }
@@ -340,8 +340,16 @@ void Bite_and::gen_x86(vector<string> params, ostream &o)
 
 void Return_::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[0] << "(%rbp), %eax\n"
-      << "\tjmp\t" << params[1] << "\n";
+    if (params[2] == "char")
+    {
+        o << "\tmovb\t" << params[0] << "(%rbp), %al\n"
+          << "\tmovzbl\t%al, %eax" << endl;
+    }
+    else if (params[2] == "int")
+    {
+        o << "\tmovl\t" << params[0] << "(%rbp), %eax\n";
+    }
+    o << "\tjmp\t" << params[1] << "\n";
 }
 
 void Cmp::gen_x86(vector<string> params, ostream &o)
