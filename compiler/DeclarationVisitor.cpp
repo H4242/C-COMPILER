@@ -32,7 +32,22 @@ antlrcpp::Any DeclarationVisitor::visitAxiom(ifccParser::AxiomContext *ctx)
 antlrcpp::Any DeclarationVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
 	currentFunctionName = "main";
+	blockNameStack.push(currentFunctionName);
 	visitChildren(ctx);
+	auto it = usedVariables.begin();
+	while (it != usedVariables.end())
+	{
+		if (it->first.find(currentFunctionName) == 0)
+		{
+			it = usedVariables.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	blockNameStack.pop();
+
 	return 0;
 }
 
@@ -98,6 +113,7 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 	{
 		throw std::logic_error("error: conflicting function signature for '" + funcName + "'");
 	}
+<<<<<<< HEAD
 
 	if (ctx->defParams())
 	{
@@ -107,6 +123,24 @@ antlrcpp::Any DeclarationVisitor::visitFunctiondef(ifccParser::FunctiondefContex
 	{
 		visit(ctx->block());
 	}
+	== == == =
+				 blockNameStack.push(currentFunctionName);
+	visitChildren(ctx);
+
+	auto it = usedVariables.begin();
+	while (it != usedVariables.end())
+	{
+		if (it->first.find(funcName) == 0)
+		{
+			it = usedVariables.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	blockNameStack.pop();
+>>>>>>> dev
 	return 0;
 }
 
@@ -130,7 +164,7 @@ antlrcpp::Any DeclarationVisitor::visitDefParams(ifccParser::DefParamsContext *c
 	int size = ctx->VAR().size();
 	for (int i = 0; i < size; i++)
 	{
-		string varName = currentFunctionName + "_" + ctx->VAR(i)->getText();
+		string varName = currentFunctionName + "_/" + ctx->VAR(i)->getText() + "/";
 		if (usedVariables.find(ctx->VAR(i)->getText()) != usedVariables.end())
 		{
 			throw std::logic_error("error: redeclaration of '" + ctx->VAR(i)->getText() + "' in function '" + currentFunctionName + "'");
@@ -165,7 +199,7 @@ antlrcpp::Any DeclarationVisitor::visitDeclaration(ifccParser::DeclarationContex
 	int size = ctx->VAR().size();
 	for (int i = 0; i < size; i++)
 	{
-		string varName = currentFunctionName + "_" + ctx->VAR(i)->getText();
+		string varName = currentFunctionName + "_/" + ctx->VAR(i)->getText() + "/";
 		if (usedVariables.find(varName) != usedVariables.end())
 		{
 			throw std::logic_error("error: redeclaration of '" + ctx->VAR(i)->getText() + "'");
@@ -181,8 +215,19 @@ antlrcpp::Any DeclarationVisitor::visitDeclaration(ifccParser::DeclarationContex
 
 antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext *ctx)
 {
-	string varName = currentFunctionName + "_" + ctx->VAR()->getText();
-	if (usedVariables.find(varName) == usedVariables.end())
+	string varName = ctx->VAR()->getText();
+	int found = 0;
+
+	for (auto const &pair : usedVariables)
+	{
+		if (pair.first.find("/" + varName + "/") != std::string::npos)
+		{
+			found = 1;
+			varName = pair.first;
+			break;
+		}
+	}
+	if (found == 0)
 	{
 		throw std::logic_error("error: '" + varName + "' undeclared");
 	}
@@ -193,11 +238,46 @@ antlrcpp::Any DeclarationVisitor::visitAssignment(ifccParser::AssignmentContext 
 
 antlrcpp::Any DeclarationVisitor::visitVarexpr(ifccParser::VarexprContext *ctx)
 {
-	string varName = currentFunctionName + "_" + ctx->VAR()->getText();
-	if (usedVariables.find(varName) == usedVariables.end())
+	string varName = ctx->VAR()->getText();
+	int found = 0;
+
+	for (auto const &pair : usedVariables)
+	{
+		if (pair.first.find("/" + varName + "/") != std::string::npos)
+		{
+			found = 1;
+			varName = pair.first;
+			break;
+		}
+	}
+	if (found == 0)
 	{
 		throw std::logic_error("error: '" + varName + "' undeclared");
 	}
 	usedVariables[varName] = true;
 	return varName;
+}
+
+antlrcpp::Any DeclarationVisitor::visitStat_block(ifccParser::Stat_blockContext *ctx)
+{
+	string blockName = "$_" + to_string(currentBlockName);
+	blockNameStack.push(blockName);
+	currentFunctionName = blockName;
+	currentBlockName++;
+	visitChildren(ctx);
+	auto it = usedVariables.begin();
+	while (it != usedVariables.end())
+	{
+		if (it->first.find(blockName) == 0)
+		{
+			it = usedVariables.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	blockNameStack.pop();
+	currentFunctionName = blockNameStack.top();
+	return 0;
 }

@@ -21,6 +21,7 @@ public:
 	virtual antlrcpp::Any visitDeclParams(ifccParser::DeclParamsContext *ctx) override;
 	virtual antlrcpp::Any visitDefParams(ifccParser::DefParamsContext *ctx) override;
 	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
+	virtual antlrcpp::Any visitStat_block(ifccParser::Stat_blockContext *ctx) override;
 
 protected:
 	unordered_map<string, bool> usedVariables = {};
@@ -28,4 +29,6 @@ protected:
 	unordered_map<string, Function> definedFunctions = {};
 	vector<Function> calledFunctions = {};
 	string currentFunctionName = "";
+	int currentBlockName = 0;
+	stack<string> blockNameStack;
 };

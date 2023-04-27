@@ -361,3 +361,12 @@ void JumpEqual::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tje\t" << params[0] << "\n";
 }
+
+void Mod::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n" // left
+      << "\tcltd\n"                                  // case of division by 0
+      << "\tidivl\t" << params[2] << "(%rbp)\n"      // right
+      << "\tmovl\t%edx, %eax\n"
+      << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
+}
