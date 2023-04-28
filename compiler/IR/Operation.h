@@ -255,3 +255,13 @@ public:
 
 protected:
 };
+
+class PutChar : public Operation
+{
+public:
+    PutChar() : Operation() {}
+    void genIR(vector<string> params);
+    void gen_x86(vector<string> params, ostream &o);
+
+protected:
+};

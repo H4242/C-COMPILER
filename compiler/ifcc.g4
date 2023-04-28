@@ -11,11 +11,14 @@ block:
 		| while_stmt
 		| returnstmt
 		| stat_block
+		| putchar
 	)* returnstmt? '}';
 
 function:
 	retType = ('int' | 'char' | 'void') VAR '(' declParams? ')' ';'		# functiondecl
 	| retType = ('int' | 'char' | 'void') VAR '(' defParams? ')' block	# functiondef;
+
+putchar: 'putchar(' expr ')' ';';
 
 declParams: type VAR (',' type VAR)*;
 defParams: type VAR (',' type VAR)*;
@@ -33,6 +36,7 @@ prog:
 		| while_stmt
 		| returnstmt
 		| stat_block
+		| putchar
 	)* returnstmt '}';
 
 returnstmt: 'return' expr? ';';
@@ -55,6 +59,7 @@ stat_block:
 		| returnstmt
 		| callFunction
 		| stat_block
+		| putchar
 	)* '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;

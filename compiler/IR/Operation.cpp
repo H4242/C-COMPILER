@@ -154,6 +154,12 @@ void JumpEqual::genIR(vector<string> params)
     instrIR = "je\t" + instrIR;
 }
 
+void PutChar::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "putcahr\t" + instrIR;
+}
+
 void Add::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %edx\n"
@@ -326,4 +332,10 @@ void Mod::gen_x86(vector<string> params, ostream &o)
       << "\tidivl\t" << params[2] << "(%rbp)\n"      // right
       << "\tmovl\t%edx, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
+}
+
+void PutChar::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[0] << "(% rbp), %edi\n "
+      << "\tcall\tputchar@PLT\n";
 }

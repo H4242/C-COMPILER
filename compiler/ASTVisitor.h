@@ -35,6 +35,7 @@ public:
 	virtual antlrcpp::Any visitFunctiondecl(ifccParser::FunctiondeclContext *ctx) override;
 	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
 	virtual antlrcpp::Any visitCallexpr(ifccParser::CallexprContext *ctx) override;
+	virtual antlrcpp::Any visitPutchar(ifccParser::PutcharContext *ctx) override;
 	// 4.11
 	virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
 	virtual antlrcpp::Any visitStat_block(ifccParser::Stat_blockContext *ctx) override;

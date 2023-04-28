@@ -45,7 +45,8 @@ public:
     BasicBlock *get_last_bb();
     void set_current_bb(BasicBlock *bb);
     int get_nextFreeSymbolIndex();
-
+    void set_putcharCall();
+    bool get_putcharCall();
     string get_name() { return name; }
 
 protected:
@@ -58,7 +59,7 @@ protected:
     vector<BasicBlock *> bbs; /**< all the basic blocks of this CFG*/
 
     string name; /**< name of the function */
-
+    bool putcharCall = false;
     // basic block management
     BasicBlock *current_bb;
     BasicBlock *last_bb;

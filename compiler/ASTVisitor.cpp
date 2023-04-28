@@ -41,7 +41,7 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	{
 		functionReturnType[funcName] = Type(ctx->retType->getText());
 	}
-	
+
 	Operation *operation = new Rmem();
 	int size = ctx->defParams()->VAR().size();
 	for (int i = 0; i < size; i++)
@@ -52,7 +52,6 @@ antlrcpp::Any ASTVisitor::visitFunctiondef(ifccParser::FunctiondefContext *ctx)
 	}
 	visitChildren(ctx);
 
-	
 	BasicBlock *last_block = currentCFG->get_last_bb();
 	currentCFG->add_bb(last_block);
 	return 0;
@@ -416,6 +415,16 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 		Operation *operation = new Return_();
 		currentCFG->add_to_current_bb(operation, type, {name_index, last_block->get_label()});
 	}
+	return 0;
+}
+
+antlrcpp::Any ASTVisitor::visitPutchar(ifccParser::PutcharContext *ctx)
+{
+	string name = visit(ctx->expr()).as<string>();
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	Operation *operation = new PutChar();
+	currentCFG->add_to_current_bb(operation, Type("int"), {name_index});
+	currentCFG->set_putcharCall();
 	return 0;
 }
 
