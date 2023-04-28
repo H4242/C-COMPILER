@@ -444,6 +444,16 @@ antlrcpp::Any ASTVisitor::visitReturnstmt(ifccParser::ReturnstmtContext *ctx)
 	return 0;
 }
 
+antlrcpp::Any ASTVisitor::visitPutchar(ifccParser::PutcharContext *ctx)
+{
+	string name = visit(ctx->expr()).as<string>();
+	string name_index = to_string(currentCFG->get_symbol_table_index()[name]);
+	Operation *operation = new PutChar();
+	currentCFG->add_to_current_bb(operation, Type("int"), {name_index});
+	currentCFG->set_putcharCall();
+	return 0;
+}
+
 vector<CFG *> ASTVisitor::getCFGs()
 {
 	return cfgs;

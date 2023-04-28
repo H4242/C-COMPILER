@@ -11,11 +11,14 @@ block:
 		| while_stmt
 		| returnstmt
 		| stat_block
+		| putchar
 	)* returnstmt? '}';
 
-function : type VAR '(' declParams? ')' ';'		#functiondecl
- 		| type VAR '(' defParams? ')' block 	#functiondef
-		;
+function:
+	type VAR '(' declParams? ')' ';'	# functiondecl
+	| type VAR '(' defParams? ')' block	# functiondef;
+
+putchar: 'putchar(' expr ')' ';';
 
 declParams: type VAR (',' type VAR)*;
 defParams: type VAR (',' type VAR)*;
@@ -33,6 +36,7 @@ prog:
 		| while_stmt
 		| returnstmt
 		| stat_block
+		| putchar
 	)* returnstmt '}';
 
 returnstmt: 'return' expr? ';';
@@ -53,28 +57,26 @@ stat_block:
 		| if_stmt
 		| while_stmt
 		| returnstmt
-		| callFunction
+		| callFunction ';'
 		| stat_block
+		| putchar
 	)* '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;
 
 expr:
-	op=('-' | '!') expr										# unaryexpr
-	|expr op=('*' | '/') expr								# muldiv
-	| expr op=('+' | '-') expr								# addsub
-	| expr op=('<' | '>' | '==' | '!=' | '<=' | '>=') expr	# compexpr
-	| expr op=('&' | '|' | '^') expr						# bitexpr
-	| CONST													# constexpr
-	| VAR													# varexpr
-	| CHAR													# charexpr
-	| '(' expr ')'											# parexpr
-	| callFunction											# callexpr;
+	op = ('-' | '!') expr										# unaryexpr
+	| expr op = ('*' | '/' | '%') expr							# muldiv
+	| expr op = ('+' | '-') expr								# addsub
+	| expr op = ('<' | '>' | '==' | '!=' | '<=' | '>=') expr	# compexpr
+	| expr op = ('&' | '|' | '^') expr							# bitexpr
+	| CONST														# constexpr
+	| VAR														# varexpr
+	| CHAR														# charexpr
+	| '(' expr ')'												# parexpr
+	| callFunction												# callexpr;
 
-type : 'void' 	# voidtype
-	|'int' 		# inttype
-	|'char' 	# chartype
-	;
+type: 'void' # voidtype | 'int' # inttype | 'char' # chartype;
 
 CHAR: '\'' . '\'';
 CONST: [0-9]+;

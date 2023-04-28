@@ -105,3 +105,12 @@ int CFG::get_nextFreeSymbolIndex()
 {
     return nextFreeSymbolIndex;
 }
+
+void CFG::set_putcharCall()
+{
+    putcharCall = true;
+}
+bool CFG::get_putcharCall()
+{
+    return putcharCall;
+}
