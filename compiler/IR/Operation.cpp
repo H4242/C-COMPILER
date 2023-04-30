@@ -5,153 +5,9 @@
 
 using namespace std;
 
-void Operation::genIR(vector<string> params)
-{
-    for (vector<string>::iterator it = params.begin(); it != params.end(); it++)
-    {
-        instrIR += *it + (next(it) != params.end() ? ", " : "\n");
-    }
-}
-
 string Operation::getInstrIR()
 {
     return instrIR;
-}
-void Add::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "add\t" + instrIR;
-}
-
-void Sub::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "sub\t" + instrIR;
-}
-
-void Mul::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "mul\t" + instrIR;
-}
-
-void Div::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "div\t" + instrIR;
-}
-
-void Mod::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "mod\t" + instrIR;
-}
-void Copy::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "copy\t" + instrIR;
-}
-
-void Ldconst::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "ldconst\t" + instrIR;
-}
-
-void Rmem::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "rmem\t" + instrIR;
-}
-
-void Wmem::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "wmem\t" + instrIR;
-}
-
-void Call::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "call\t" + instrIR;
-}
-
-void Cmp_eq::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_eq\t" + instrIR;
-}
-
-void Cmp_lt::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_lt\t" + instrIR;
-}
-
-void Cmp_le::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Cmp_ge::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Cmp_gt::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Bite_or::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Bite_xor::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Bite_and::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Unary_different::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Unary_negate::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Return_::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp_le\t" + instrIR;
-}
-
-void Cmp::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "cmp\t" + instrIR;
-}
-
-void JmpNotEqual::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "je\t" + instrIR;
 }
 
 void Add::gen_x86(vector<string> params, ostream &o)
@@ -164,7 +20,7 @@ void Add::gen_x86(vector<string> params, ostream &o)
 
 void Sub::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n" // left
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tsubl\t" << params[2] << "(%rbp), %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
@@ -178,9 +34,9 @@ void Mul::gen_x86(vector<string> params, ostream &o)
 
 void Div::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n" // left
-      << "\tcltd\n"                                  // case of division by 0
-      << "\tidivl\t" << params[2] << "(%rbp)\n"      // right
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tcltd\n"
+      << "\tidivl\t" << params[2] << "(%rbp)\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
 }
 
@@ -246,18 +102,12 @@ void Call::gen_x86(vector<string> params, ostream &o)
     o << "\tcall\t" << params[0] << endl;
 }
 
-void PutChar::genIR(vector<string> params)
-{
-    Operation::genIR(params);
-    instrIR = "putcahr\t" + instrIR;
-}
-
 void Cmp_gt::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsetg\t%al\n"         // %al is 0 or 1 (8 bits)
-      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tsetg\t%al\n"
+      << "\tmovzbl\t%al, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
@@ -265,8 +115,8 @@ void Cmp_ge::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsetge\t%al\n"        // %al is 0 or 1 (8 bits)
-      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tsetge\t%al\n"
+      << "\tmovzbl\t%al, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
@@ -274,8 +124,8 @@ void Cmp_eq::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsete\t%al\n"         // %al is 0 or 1 (8 bits)
-      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tsete\t%al\n"
+      << "\tmovzbl\t%al, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
@@ -283,8 +133,8 @@ void Cmp_lt::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsetl\t%al\n"         // %al is 0 or 1 (8 bits)
-      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tsetl\t%al\n"
+      << "\tmovzbl\t%al, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
@@ -292,8 +142,8 @@ void Cmp_le::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsetle\t%al\n"        // %al is 0 or 1 (8 bits)
-      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tsetle\t%al\n"
+      << "\tmovzbl\t%al, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
@@ -301,8 +151,8 @@ void Cmp_ne::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
       << "\tcmpl\t" << params[2] << "(%rbp), %eax\n"
-      << "\tsetne\t%al\n"        // %al is 0 or 1 (8 bits)
-      << "\tmovzbl\t%al, %eax\n" // movzbl : convert 8 bits to 32 bits
+      << "\tsetne\t%al\n"
+      << "\tmovzbl\t%al, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)\n";
 }
 
@@ -370,9 +220,9 @@ void JmpNotEqual::gen_x86(vector<string> params, ostream &o)
 
 void Mod::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n" // left
-      << "\tcltd\n"                                  // case of division by 0
-      << "\tidivl\t" << params[2] << "(%rbp)\n"      // right
+    o << "\tmovl\t" << params[1] << "(%rbp), %eax\n"
+      << "\tcltd\n"
+      << "\tidivl\t" << params[2] << "(%rbp)\n"
       << "\tmovl\t%edx, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
 }

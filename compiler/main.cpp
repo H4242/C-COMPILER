@@ -45,22 +45,16 @@ int main(int argn, const char **argv)
     exit(1);
   }
 
-  // use another visitor declarationVisitor
-  /*
-  use hashmap <string, long> = <variableName, offsetInStack>
-  if newDeclaration in hashmap => error (even if different type)
-  */
-
-  // create symbolTable for the scope
-  cerr << "DeclarationVisitor" << endl;
+  // Static analysis
   DeclarationVisitor d;
   d.visit(tree);
-  cerr << "ASTVisitor" << endl;
+
+  // Code generation
   ASTVisitor v;
   v.visit(tree);
 
+  // Generate assembly
   CodeGen *codegen = new Gen_x86(v.getCFGs());
-
   codegen->gen_asm(std::cout);
 
   return 0;

@@ -21,7 +21,7 @@ public:
 	virtual antlrcpp::Any visitDeclParams(ifccParser::DeclParamsContext *ctx) override;
 	virtual antlrcpp::Any visitDefParams(ifccParser::DefParamsContext *ctx) override;
 	virtual antlrcpp::Any visitCallFunction(ifccParser::CallFunctionContext *ctx) override;
-	virtual antlrcpp::Any visitStat_block(ifccParser::Stat_blockContext *ctx) override;
+	virtual antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
 
 protected:
 	unordered_map<string, bool> usedVariables = {};

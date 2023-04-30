@@ -56,9 +56,9 @@ bool CFG::is_in_symbol_table(string name)
     return symbolTableIndex.find(name) != symbolTableIndex.end();
 }
 
-void CFG::add_to_current_bb(Operation *op, Type t, vector<string> params)
+void CFG::add_to_current_bb(Operation *op, vector<string> params)
 {
-    current_bb->add_IRInstr(op, t, params);
+    current_bb->add_IRInstr(op, params);
 }
 
 void CFG::add_const_to_symbol_table(string name, int val)

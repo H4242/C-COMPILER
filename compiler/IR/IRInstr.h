@@ -5,17 +5,16 @@
 #include <iostream>
 #include <initializer_list>
 
-// Declarations from the parser -- replace with your own
-#include "Type.h"
 #include "BasicBlock.h"
 #include "Operation.h"
+
 using namespace std;
+
 class IRInstr
 {
-
 public:
     /**  constructor */
-    IRInstr(Operation *op, Type t, vector<string> params);
+    IRInstr(Operation *op, vector<string> params);
 
     /** Actual code generation */
     void gen_IR(ostream &o); /**< x86 assembly code generation for this IR instruction */
@@ -25,7 +24,6 @@ public:
     vector<string> getParams();
 
 private:
-    Type t;
     Operation *op;
     vector<string> params;
 

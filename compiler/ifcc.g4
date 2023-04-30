@@ -10,7 +10,7 @@ block:
 		| if_stmt
 		| while_stmt
 		| returnstmt
-		| stat_block
+		| block
 		| putchar
 	)* returnstmt? '}';
 
@@ -18,14 +18,13 @@ function:
 	type VAR '(' declParams? ')' ';'	# functiondecl
 	| type VAR '(' defParams? ')' block	# functiondef;
 
-putchar: 'putchar(' expr ')' ';';
-
 declParams: type VAR (',' type VAR)*;
 defParams: type VAR (',' type VAR)*;
 
 callFunction: VAR '(' args? ')';
-
 args: expr (',' expr)*;
+
+putchar: 'putchar' '(' expr ')' ';';
 
 prog:
 	'int' 'main' '(' ')' '{' (
@@ -35,7 +34,7 @@ prog:
 		| if_stmt
 		| while_stmt
 		| returnstmt
-		| stat_block
+		| block
 		| putchar
 	)* returnstmt '}';
 
@@ -46,23 +45,11 @@ declaration: type VAR (',' VAR)* ('=' expr)? ';';
 assignment: VAR '=' expr ';';
 
 if_stmt:
-	'if' '(' expr ')' stat_block (
-		'else if' '(' expr ')' stat_block
-	)* ('else' stat_block)?;
+	'if' '(' expr ')' block (
+		'else' 'if' '(' expr ')' block
+	)* ('else' block)?;
 
-stat_block:
-	'{' (
-		assignment
-		| declaration
-		| if_stmt
-		| while_stmt
-		| returnstmt
-		| callFunction ';'
-		| stat_block
-		| putchar
-	)* '}';
-
-while_stmt: 'while' '(' expr ')' stat_block;
+while_stmt: 'while' '(' expr ')' block;
 
 expr:
 	op = ('-' | '!') expr										# unaryexpr

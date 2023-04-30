@@ -1,4 +1,3 @@
-#include <stdio.h>
 int alphabet(int n)
 {
     int a = 'A';

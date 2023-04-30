@@ -26,7 +26,6 @@ void Gen_x86::gen_asm_prologue(ostream &o, CFG *cfg)
     o << "\t.globl\t" << cfg->get_name() << "\n"
       << "\t.type " << cfg->get_name() << ",@function\n"
       << cfg->get_name() << ": \n"
-      // prologue
       << "\tpushq\t%rbp\n"
       << "\tmovq\t%rsp, %rbp\n"
       << "\tsubq	$" << -cfg->get_nextFreeSymbolIndex() << ", %rsp\n";

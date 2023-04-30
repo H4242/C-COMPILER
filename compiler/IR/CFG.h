@@ -37,7 +37,7 @@ public:
     map<string, int> get_symbol_table_const();
     map<string, Type> get_symbol_table_type();
     map<string, int> get_symbol_table_index();
-    void add_to_current_bb(Operation *op, Type t, vector<string> params);
+    void add_to_current_bb(Operation *op, vector<string> params);
 
     // getters
     vector<BasicBlock *> get_bbs();

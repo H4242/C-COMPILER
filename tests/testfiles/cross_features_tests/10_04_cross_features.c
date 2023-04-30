@@ -1,4 +1,3 @@
-#include <stdio.h>
 void print_int(int x)
 {
     if (x < 0)
