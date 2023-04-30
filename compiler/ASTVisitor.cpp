@@ -385,8 +385,8 @@ antlrcpp::Any ASTVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 			Operation *operationCmp = new Cmp();
 			string expr_name_index = to_string(currentCFG->get_symbol_table_index()[expr_name]);
 			test_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
-			Operation *operationJumpNotEqual = new JumpNotEqual();
-			test_bb->add_IRInstr(operationJumpNotEqual, Type("int"), {then_bb->get_label()});
+			Operation *operationJmpNotEqual = new JmpNotEqual();
+			test_bb->add_IRInstr(operationJmpNotEqual, Type("int"), {then_bb->get_label()});
 		}
 		else
 		{
@@ -422,8 +422,8 @@ antlrcpp::Any ASTVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 	Operation *operationCmp = new Cmp();
 	endwhile_bb->add_IRInstr(operationCmp, Type("int"), {expr_name_index}); // cmp expr to 1 if eq jump
 
-	Operation *operationJumpNotEqual = new JumpNotEqual();
-	endwhile_bb->add_IRInstr(operationJumpNotEqual, Type("int"), {then_bb->get_label()});
+	Operation *operationJmpNotEqual = new JmpNotEqual();
+	endwhile_bb->add_IRInstr(operationJmpNotEqual, Type("int"), {then_bb->get_label()});
 
 	test_bb->set_next_block(endwhile_bb);
 	currentCFG->add_bb(endwhile_bb);

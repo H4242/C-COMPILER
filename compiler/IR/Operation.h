@@ -236,10 +236,10 @@ public:
 protected:
 };
 
-class JumpNotEqual : public Operation
+class JmpNotEqual : public Operation
 {
 public:
-    JumpNotEqual() : Operation() {}
+    JmpNotEqual() : Operation() {}
     void genIR(vector<string> params);
     void gen_x86(vector<string> params, ostream &o);
 
