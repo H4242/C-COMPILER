@@ -76,3 +76,9 @@ gui:
 clean:
 	rm -rf build generated
 	rm -f ifcc
+
+test: ifcc
+	make && cd ../tests && python3 ifcc-test.py ../tests/testfiles/$(subfolder)
+
+test-%: ifcc
+	@$(MAKE) test subfolder=$*
