@@ -148,7 +148,7 @@ void Cmp::genIR(vector<string> params)
     instrIR = "cmp\t" + instrIR;
 }
 
-void JumpEqual::genIR(vector<string> params)
+void JumpNotEqual::genIR(vector<string> params)
 {
     Operation::genIR(params);
     instrIR = "je\t" + instrIR;
@@ -360,12 +360,12 @@ void Return_::gen_x86(vector<string> params, ostream &o)
 
 void Cmp::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tcmpl\t$1," << params[0] << "(%rbp)\n";
+    o << "\tcmpl\t$0," << params[0] << "(%rbp)\n";
 }
 
-void JumpEqual::gen_x86(vector<string> params, ostream &o)
+void JumpNotEqual::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tje\t" << params[0] << "\n";
+    o << "\tjne\t" << params[0] << "\n";
 }
 
 void Mod::gen_x86(vector<string> params, ostream &o)
