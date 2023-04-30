@@ -236,10 +236,10 @@ public:
 protected:
 };
 
-class JumpEqual : public Operation
+class JmpNotEqual : public Operation
 {
 public:
-    JumpEqual() : Operation() {}
+    JmpNotEqual() : Operation() {}
     void genIR(vector<string> params);
     void gen_x86(vector<string> params, ostream &o);
 
@@ -250,6 +250,16 @@ class Cmp : public Operation
 {
 public:
     Cmp() : Operation() {}
+    void genIR(vector<string> params);
+    void gen_x86(vector<string> params, ostream &o);
+
+protected:
+};
+
+class PutChar : public Operation
+{
+public:
+    PutChar() : Operation() {}
     void genIR(vector<string> params);
     void gen_x86(vector<string> params, ostream &o);
 

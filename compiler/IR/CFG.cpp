@@ -15,11 +15,11 @@ void CFG::add_bb(BasicBlock *bb)
 
 void CFG::add_to_symbol_table(string name, Type t)
 {
-    if (t.getType() == INT)
+    if (t.getType() == "int")
     {
         nextFreeSymbolIndex -= 4;
     }
-    if (t.getType() == CHAR)
+    if (t.getType() == "char")
     {
         nextFreeSymbolIndex -= 1;
     }
@@ -104,4 +104,13 @@ void CFG::set_current_bb(BasicBlock *bb)
 int CFG::get_nextFreeSymbolIndex()
 {
     return nextFreeSymbolIndex;
+}
+
+void CFG::set_putcharCall()
+{
+    putcharCall = true;
+}
+bool CFG::get_putcharCall()
+{
+    return putcharCall;
 }

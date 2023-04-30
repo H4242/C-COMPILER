@@ -52,10 +52,10 @@ int main(int argn, const char **argv)
   */
 
   // create symbolTable for the scope
-
+  cerr << "DeclarationVisitor" << endl;
   DeclarationVisitor d;
   d.visit(tree);
-
+  cerr << "ASTVisitor" << endl;
   ASTVisitor v;
   v.visit(tree);
 

@@ -148,7 +148,7 @@ void Cmp::genIR(vector<string> params)
     instrIR = "cmp\t" + instrIR;
 }
 
-void JumpEqual::genIR(vector<string> params)
+void JmpNotEqual::genIR(vector<string> params)
 {
     Operation::genIR(params);
     instrIR = "je\t" + instrIR;
@@ -186,14 +186,49 @@ void Div::gen_x86(vector<string> params, ostream &o)
 
 void Ldconst::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t$" << params[1] << ", " << params[0] << "(%rbp)" << endl;
+    if (params[2] == "int")
+    {
+        o << "\tmovl\t$";
+    }
+    else if (params[2] == "char")
+    {
+        o << "\tmovb\t$";
+    }
+    o << params[1] << ", " << params[0] << "(%rbp)" << endl;
 }
 
 void Copy::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[1] << "(%rbp)"
-      << ", %eax\n"
-      << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
+    if (params[2] == "int")
+    {
+        o << "\tmovl\t" << params[3] << "(%rbp)"
+          << ", %eax\n";
+    }
+    else if (params[2] == "char")
+    {
+        o << "\tmovb\t" << params[3] << "(%rbp)"
+          << ", %al\n";
+    }
+
+    if (params[0] == "int")
+    {
+        if (params[2] == "char")
+        {
+            o << "\tmovzbl\t%al, %eax" << endl;
+        }
+        o << "\tmovl\t%eax, " << params[1] << "(%rbp)" << endl;
+    }
+    else if (params[0] == "char")
+    {
+        if (params[2] == "int")
+        {
+            o << "\tmovl\t$256, %ebx\n"
+              << "\tcltd\n"
+              << "\tidivl\t%ebx\n"
+              << "\tmovl\t%edx, %eax\n";
+        }
+        o << "\tmovb\t%al, " << params[1] << "(%rbp)" << endl;
+    }
 }
 
 void Rmem::gen_x86(vector<string> params, ostream &o)
@@ -209,6 +244,12 @@ void Wmem::gen_x86(vector<string> params, ostream &o)
 void Call::gen_x86(vector<string> params, ostream &o)
 {
     o << "\tcall\t" << params[0] << endl;
+}
+
+void PutChar::genIR(vector<string> params)
+{
+    Operation::genIR(params);
+    instrIR = "putcahr\t" + instrIR;
 }
 
 void Cmp_gt::gen_x86(vector<string> params, ostream &o)
@@ -305,18 +346,26 @@ void Bite_and::gen_x86(vector<string> params, ostream &o)
 
 void Return_::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tmovl\t" << params[0] << "(%rbp), %eax\n"
-      << "\tjmp\t" << params[1] << "\n";
+    if (params[2] == "char")
+    {
+        o << "\tmovb\t" << params[0] << "(%rbp), %al\n"
+          << "\tmovzbl\t%al, %eax" << endl;
+    }
+    else if (params[2] == "int")
+    {
+        o << "\tmovl\t" << params[0] << "(%rbp), %eax\n";
+    }
+    o << "\tjmp\t" << params[1] << "\n";
 }
 
 void Cmp::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tcmpl\t$1," << params[0] << "(%rbp)\n";
+    o << "\tcmpl\t$0," << params[0] << "(%rbp)\n";
 }
 
-void JumpEqual::gen_x86(vector<string> params, ostream &o)
+void JmpNotEqual::gen_x86(vector<string> params, ostream &o)
 {
-    o << "\tje\t" << params[0] << "\n";
+    o << "\tjne\t" << params[0] << "\n";
 }
 
 void Mod::gen_x86(vector<string> params, ostream &o)
@@ -326,4 +375,10 @@ void Mod::gen_x86(vector<string> params, ostream &o)
       << "\tidivl\t" << params[2] << "(%rbp)\n"      // right
       << "\tmovl\t%edx, %eax\n"
       << "\tmovl\t%eax, " << params[0] << "(%rbp)" << endl;
+}
+
+void PutChar::gen_x86(vector<string> params, ostream &o)
+{
+    o << "\tmovl\t" << params[0] << "(% rbp), %edi\n "
+      << "\tcall\tputchar@PLT\n";
 }

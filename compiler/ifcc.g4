@@ -11,11 +11,14 @@ block:
 		| while_stmt
 		| returnstmt
 		| stat_block
+		| putchar
 	)* returnstmt? '}';
 
 function:
-	retType = ('int' | 'char' | 'void') VAR '(' declParams? ')' ';'		# functiondecl
-	| retType = ('int' | 'char' | 'void') VAR '(' defParams? ')' block	# functiondef;
+	type VAR '(' declParams? ')' ';'	# functiondecl
+	| type VAR '(' defParams? ')' block	# functiondef;
+
+putchar: 'putchar(' expr ')' ';';
 
 declParams: type VAR (',' type VAR)*;
 defParams: type VAR (',' type VAR)*;
@@ -33,6 +36,7 @@ prog:
 		| while_stmt
 		| returnstmt
 		| stat_block
+		| putchar
 	)* returnstmt '}';
 
 returnstmt: 'return' expr? ';';
@@ -53,8 +57,9 @@ stat_block:
 		| if_stmt
 		| while_stmt
 		| returnstmt
-		| callFunction
+		| callFunction ';'
 		| stat_block
+		| putchar
 	)* '}';
 
 while_stmt: 'while' '(' expr ')' stat_block;
@@ -67,13 +72,15 @@ expr:
 	| expr op = ('&' | '|' | '^') expr							# bitexpr
 	| CONST														# constexpr
 	| VAR														# varexpr
+	| CHAR														# charexpr
 	| '(' expr ')'												# parexpr
 	| callFunction												# callexpr;
 
-type: 'int' # inttype | 'char' # chartype;
+type: 'void' # voidtype | 'int' # inttype | 'char' # chartype;
 
+CHAR: '\'' . '\'';
 CONST: [0-9]+;
+VAR: ([a-zA-Z_][a-zA-Z0-9_]*);
 COMMENT: ('/*' .*? '*/' | '//' .*? '\n') -> skip;
 DIRECTIVE: '#' .*? '\n' -> skip;
 WS: [ \t\r\n] -> channel(HIDDEN);
-VAR: ([a-zA-Z_][a-zA-Z0-9_]*);
